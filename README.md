@@ -29,7 +29,6 @@ pip install -r requirements.txt
 ## Documentation
 
 - Installation: [`docs/INSTALL.md`](docs/INSTALL.md)
-- Quick start: [`docs/QUICKSTART.md`](docs/QUICKSTART.md)
 - CLI reference: [`docs/CLI_USAGE.md`](docs/CLI_USAGE.md)
 - Web UI usage and API: [`webui/README.md`](webui/README.md)
 - Test scripts and matrix: [`tests/README.md`](tests/README.md)
@@ -60,7 +59,11 @@ For reproducible genome setup (download scripts + SHA256 manifest), see [`docs/I
 - `rmaps_core/`: core importable modules
 - `legacy/`: event-specific motif scripts (`motifMap*_MP.py`)
 - `bin/`: converter/util scripts
-- `docs/`: installation, quickstart, and CLI docs
+- `scripts/`: genome download and setup helpers
+- `data/`: motif tables and reference motif inputs
+- `testData/`: bundled sample inputs for quick tests
+- `genomedata/`: local genome FASTA root (`<build>/<build>.fa`)
+- `docs/`: installation and CLI docs
 - `tests/`: smoke and integration test runners
 - `webui/`: Flask app, static assets, and templates
 
