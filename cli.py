@@ -4,15 +4,18 @@ from pathlib import Path
 import typer
 
 from rmaps_core.motif_map_core import miso_converter_script, run_subprocess, run_motif_map
+from rmaps_core.clip_core import run_clip_map
 
 
-app = typer.Typer(help="RNA motif maps and exon set utilities")
+app = typer.Typer(help="RNA motif maps, CLIP maps, and exon set utilities")
 
 motif_app = typer.Typer(help="Motif map generation for splicing event types")
+clip_app = typer.Typer(help="CLIP-seq RNA map generation for splicing event types")
 convert_app = typer.Typer(help="Converters (e.g., MISO to rMATS)")
 exon_app = typer.Typer(help="Build up/down/background exon sets from rMATS+cuffdiff")
 
 app.add_typer(motif_app, name="motif-map")
+app.add_typer(clip_app, name="clip-map")
 app.add_typer(convert_app, name="convert")
 app.add_typer(exon_app, name="exon-sets")
 
@@ -365,6 +368,141 @@ def motif_map_mxe(
         sig_fdr=sig_fdr,
         sig_delta_psi=sig_delta_psi,
         separate=separate,
+    )
+    raise typer.Exit(code=code)
+
+
+#
+# clip-map subcommands
+#
+
+
+@clip_app.command("se")
+def clip_map_se(
+    peak: Path = typer.Option(..., "--peak", "-p", help="CLIP-seq peak file"),
+    output: Path = typer.Option(..., "--output", "-o", help="Output directory"),
+    rmats: str = typer.Option("NA", "--rMATS", "--rmats", help="rMATS SE file or 'NA'"),
+    miso: str = typer.Option("NA", "--miso", help="MISO SE file or 'NA'"),
+    up: str = typer.Option("NA", "--up", help="Upregulated exons file or 'NA'"),
+    down: str = typer.Option("NA", "--down", "--dn", help="Downregulated exons file or 'NA'"),
+    background: str = typer.Option("NA", "--background", "--bg", help="Background exons file or 'NA'"),
+    label: str = typer.Option("RBP", "--label", help="RBP label (e.g., PTB, ESRP)"),
+    intron: int = typer.Option(250, "--intron", help="Intron length to examine (nt)"),
+    exon: int = typer.Option(50, "--exon", help="Exon length to examine (nt)"),
+    window: int = typer.Option(10, "--window", help="Window size"),
+    step: int = typer.Option(1, "--step", help="Step size"),
+    sig_fdr: float = typer.Option(0.05, "--sig-fdr", "--sigFDR", help="FDR cutoff"),
+    sig_delta_psi: float = typer.Option(0.05, "--sig-delta-psi", "--sigDeltaPSI", help="Delta PSI cutoff"),
+    separate: bool = typer.Option(False, "--separate", help="Separate p-value plots"),
+) -> None:
+    """Generate CLIP-seq RNA map for SE (Skipped Exon) events."""
+    code = run_clip_map(
+        "se", peak, output, rmats, miso, up, down, background,
+        label, intron, exon, window, step, sig_fdr, sig_delta_psi, separate
+    )
+    raise typer.Exit(code=code)
+
+
+@clip_app.command("a3ss")
+def clip_map_a3ss(
+    peak: Path = typer.Option(..., "--peak", "-p", help="CLIP-seq peak file"),
+    output: Path = typer.Option(..., "--output", "-o", help="Output directory"),
+    rmats: str = typer.Option("NA", "--rMATS", "--rmats", help="rMATS A3SS file or 'NA'"),
+    miso: str = typer.Option("NA", "--miso", help="MISO A3SS file or 'NA'"),
+    up: str = typer.Option("NA", "--up", help="Upregulated exons file or 'NA'"),
+    down: str = typer.Option("NA", "--down", "--dn", help="Downregulated exons file or 'NA'"),
+    background: str = typer.Option("NA", "--background", "--bg", help="Background exons file or 'NA'"),
+    label: str = typer.Option("RBP", "--label", help="RBP label"),
+    intron: int = typer.Option(250, "--intron", help="Intron length (nt)"),
+    exon: int = typer.Option(50, "--exon", help="Exon length (nt)"),
+    window: int = typer.Option(10, "--window", help="Window size"),
+    step: int = typer.Option(1, "--step", help="Step size"),
+    sig_fdr: float = typer.Option(0.05, "--sig-fdr", "--sigFDR", help="FDR cutoff"),
+    sig_delta_psi: float = typer.Option(0.05, "--sig-delta-psi", "--sigDeltaPSI", help="Delta PSI cutoff"),
+    separate: bool = typer.Option(False, "--separate", help="Separate p-value plots"),
+) -> None:
+    """Generate CLIP-seq RNA map for A3SS (Alternative 3' Splice Site) events."""
+    code = run_clip_map(
+        "a3ss", peak, output, rmats, miso, up, down, background,
+        label, intron, exon, window, step, sig_fdr, sig_delta_psi, separate
+    )
+    raise typer.Exit(code=code)
+
+
+@clip_app.command("a5ss")
+def clip_map_a5ss(
+    peak: Path = typer.Option(..., "--peak", "-p", help="CLIP-seq peak file"),
+    output: Path = typer.Option(..., "--output", "-o", help="Output directory"),
+    rmats: str = typer.Option("NA", "--rMATS", "--rmats", help="rMATS A5SS file or 'NA'"),
+    miso: str = typer.Option("NA", "--miso", help="MISO A5SS file or 'NA'"),
+    up: str = typer.Option("NA", "--up", help="Upregulated exons file or 'NA'"),
+    down: str = typer.Option("NA", "--down", "--dn", help="Downregulated exons file or 'NA'"),
+    background: str = typer.Option("NA", "--background", "--bg", help="Background exons file or 'NA'"),
+    label: str = typer.Option("RBP", "--label", help="RBP label"),
+    intron: int = typer.Option(250, "--intron", help="Intron length (nt)"),
+    exon: int = typer.Option(50, "--exon", help="Exon length (nt)"),
+    window: int = typer.Option(10, "--window", help="Window size"),
+    step: int = typer.Option(1, "--step", help="Step size"),
+    sig_fdr: float = typer.Option(0.005, "--sig-fdr", "--sigFDR", help="FDR cutoff (A5SS default 0.005)"),
+    sig_delta_psi: float = typer.Option(0.01, "--sig-delta-psi", "--sigDeltaPSI", help="Delta PSI cutoff (A5SS default 0.01)"),
+    separate: bool = typer.Option(False, "--separate", help="Separate p-value plots"),
+) -> None:
+    """Generate CLIP-seq RNA map for A5SS (Alternative 5' Splice Site) events."""
+    code = run_clip_map(
+        "a5ss", peak, output, rmats, miso, up, down, background,
+        label, intron, exon, window, step, sig_fdr, sig_delta_psi, separate
+    )
+    raise typer.Exit(code=code)
+
+
+@clip_app.command("ri")
+def clip_map_ri(
+    peak: Path = typer.Option(..., "--peak", "-p", help="CLIP-seq peak file"),
+    output: Path = typer.Option(..., "--output", "-o", help="Output directory"),
+    rmats: str = typer.Option("NA", "--rMATS", "--rmats", help="rMATS RI file or 'NA'"),
+    miso: str = typer.Option("NA", "--miso", help="MISO RI file or 'NA'"),
+    up: str = typer.Option("NA", "--up", help="Upregulated exons file or 'NA'"),
+    down: str = typer.Option("NA", "--down", "--dn", help="Downregulated exons file or 'NA'"),
+    background: str = typer.Option("NA", "--background", "--bg", help="Background exons file or 'NA'"),
+    label: str = typer.Option("RBP", "--label", help="RBP label"),
+    intron: int = typer.Option(250, "--intron", help="Intron length (nt)"),
+    exon: int = typer.Option(50, "--exon", help="Exon length (nt)"),
+    window: int = typer.Option(10, "--window", help="Window size"),
+    step: int = typer.Option(1, "--step", help="Step size"),
+    sig_fdr: float = typer.Option(0.05, "--sig-fdr", "--sigFDR", help="FDR cutoff"),
+    sig_delta_psi: float = typer.Option(0.05, "--sig-delta-psi", "--sigDeltaPSI", help="Delta PSI cutoff"),
+    separate: bool = typer.Option(False, "--separate", help="Separate p-value plots"),
+) -> None:
+    """Generate CLIP-seq RNA map for RI (Retained Intron) events."""
+    code = run_clip_map(
+        "ri", peak, output, rmats, miso, up, down, background,
+        label, intron, exon, window, step, sig_fdr, sig_delta_psi, separate
+    )
+    raise typer.Exit(code=code)
+
+
+@clip_app.command("mxe")
+def clip_map_mxe(
+    peak: Path = typer.Option(..., "--peak", "-p", help="CLIP-seq peak file"),
+    output: Path = typer.Option(..., "--output", "-o", help="Output directory"),
+    rmats: str = typer.Option("NA", "--rMATS", "--rmats", help="rMATS MXE file or 'NA'"),
+    miso: str = typer.Option("NA", "--miso", help="MISO MXE file or 'NA'"),
+    up: str = typer.Option("NA", "--up", help="Upregulated exons file or 'NA'"),
+    down: str = typer.Option("NA", "--down", "--dn", help="Downregulated exons file or 'NA'"),
+    background: str = typer.Option("NA", "--background", "--bg", help="Background exons file or 'NA'"),
+    label: str = typer.Option("RBP", "--label", help="RBP label"),
+    intron: int = typer.Option(250, "--intron", help="Intron length (nt)"),
+    exon: int = typer.Option(50, "--exon", help="Exon length (nt)"),
+    window: int = typer.Option(10, "--window", help="Window size"),
+    step: int = typer.Option(1, "--step", help="Step size"),
+    sig_fdr: float = typer.Option(0.05, "--sig-fdr", "--sigFDR", help="FDR cutoff"),
+    sig_delta_psi: float = typer.Option(0.05, "--sig-delta-psi", "--sigDeltaPSI", help="Delta PSI cutoff"),
+    separate: bool = typer.Option(False, "--separate", help="Separate p-value plots"),
+) -> None:
+    """Generate CLIP-seq RNA map for MXE (Mutually Exclusive Exons) events."""
+    code = run_clip_map(
+        "mxe", peak, output, rmats, miso, up, down, background,
+        label, intron, exon, window, step, sig_fdr, sig_delta_psi, separate
     )
     raise typer.Exit(code=code)
 

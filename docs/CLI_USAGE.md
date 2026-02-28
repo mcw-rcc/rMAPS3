@@ -1,17 +1,28 @@
-# CLI Usage
+﻿# CLI Usage
+
+This document is the complete CLI reference for rMAPS 3.
 
 ## Global Help
 
 ```bash
 python cli.py --help
 python cli.py motif-map --help
+python cli.py clip-map --help
 python cli.py convert --help
 python cli.py exon-sets --help
 ```
 
-## Motif Map Commands
+## Half 1: Motif Map
 
-Event subcommands:
+### Supported Event Types
+
+- `se`: Skipped Exon
+- `a3ss`: Alternative 3' Splice Site
+- `a5ss`: Alternative 5' Splice Site
+- `ri`: Retained Intron
+- `mxe`: Mutually Exclusive Exons
+
+### Event Subcommand Help
 
 ```bash
 python cli.py motif-map se --help
@@ -21,22 +32,35 @@ python cli.py motif-map ri --help
 python cli.py motif-map mxe --help
 ```
 
-Shared required options for motif-map runs:
+### Shared Required Options
 
 - `--known-motifs`
 - `--fasta-root`
 - `--genome`
 - `--output`
 
-Common optional options:
+### Input Modes (choose one)
 
-- `--motifs` (default: `NA`)
-- `--label`
-- `--intron`, `--exon`, `--window`, `--step`
-- `--sig-fdr`, `--sig-delta-psi`
+- rMATS mode: `--rMATS <file>` with `--miso NA --up NA --down NA --background NA`
+- MISO mode: `--miso <file>` with `--rMATS NA --up NA --down NA --background NA`
+- Coordinate replay mode: `--up <file> --down <file> --background <file>` with `--rMATS NA --miso NA`
+
+### Common Optional Options
+
+- `--motifs` (default `NA`)
+- `--label` (default `RBP`)
+- `--intron` (default `250`)
+- `--exon` (default `50`)
+- `--window` (default `50`)
+- `--step` (default `1`)
+- `--sig-fdr` / `--sigFDR` (default `0.05`)
+- `--sig-delta-psi` / `--sigDeltaPSI` (default `0.05`)
 - `--separate`
 
-### Example: SE from rMATS
+### Event Details and Examples
+
+#### `se` (Skipped Exon)
+Use when your input file contains cassette-exon skipping events.
 
 ```bash
 python cli.py motif-map se \
@@ -44,42 +68,13 @@ python cli.py motif-map se \
   --motifs data/ESRP.like.motif.txt \
   --fasta-root genomedata \
   --genome hg19 \
-  --output results/se_rmats \
-  --rMATS testData/SE.MATS.ReadsOnTargetAndJunctionCounts.txt \
-  --miso NA \
-  --up NA --down NA --background NA
+  --output results/motif_se \
+  --rMATS data/test/SE.MATS.ReadsOnTargetAndJunctionCounts.txt \
+  --miso NA --up NA --down NA --background NA
 ```
 
-### Example: SE from MISO
-
-```bash
-python cli.py motif-map se \
-  --known-motifs data/knownMotifs.human.mouse.txt \
-  --motifs data/ESRP.like.motif.txt \
-  --fasta-root genomedata \
-  --genome hg19 \
-  --output results/se_miso \
-  --rMATS NA \
-  --miso testData/ESRP.OE.miso_bf \
-  --up NA --down NA --background NA
-```
-
-### Example: SE from coordinate triplet
-
-```bash
-python cli.py motif-map se \
-  --known-motifs data/knownMotifs.human.mouse.txt \
-  --motifs NA \
-  --fasta-root genomedata \
-  --genome hg19 \
-  --output results/se_coords \
-  --rMATS NA --miso NA \
-  --up path/to/up.coord.txt \
-  --down path/to/dn.coord.txt \
-  --background path/to/bg.coord.txt
-```
-
-### Example: A3SS from rMATS
+#### `a3ss` (Alternative 3' Splice Site)
+Use for alternative acceptor events.
 
 ```bash
 python cli.py motif-map a3ss \
@@ -87,13 +82,13 @@ python cli.py motif-map a3ss \
   --motifs NA \
   --fasta-root genomedata \
   --genome hg19 \
-  --output results/a3ss_rmats \
-  --rMATS temp/A3SS.MATS.ReadsOnTargetAndJunctionCounts.txt \
-  --miso NA \
-  --up NA --down NA --background NA
+  --output results/motif_a3ss \
+  --rMATS data/test/clip/A3SS/test.rMATS.txt \
+  --miso NA --up NA --down NA --background NA
 ```
 
-### Example: A5SS from rMATS
+#### `a5ss` (Alternative 5' Splice Site)
+Use for alternative donor events.
 
 ```bash
 python cli.py motif-map a5ss \
@@ -101,13 +96,13 @@ python cli.py motif-map a5ss \
   --motifs NA \
   --fasta-root genomedata \
   --genome hg19 \
-  --output results/a5ss_rmats \
-  --rMATS temp/A5SS.MATS.ReadsOnTargetAndJunctionCounts.txt \
-  --miso NA \
-  --up NA --down NA --background NA
+  --output results/motif_a5ss \
+  --rMATS data/test/clip/A5SS/test.rMATS.txt \
+  --miso NA --up NA --down NA --background NA
 ```
 
-### Example: RI from rMATS
+#### `ri` (Retained Intron)
+Use for intron-retention events.
 
 ```bash
 python cli.py motif-map ri \
@@ -115,13 +110,13 @@ python cli.py motif-map ri \
   --motifs NA \
   --fasta-root genomedata \
   --genome hg19 \
-  --output results/ri_rmats \
-  --rMATS temp/RI.MATS.ReadsOnTargetAndJunctionCounts.txt \
-  --miso NA \
-  --up NA --down NA --background NA
+  --output results/motif_ri \
+  --rMATS data/test/clip/RI/test.rMATS.txt \
+  --miso NA --up NA --down NA --background NA
 ```
 
-### Example: MXE from rMATS
+#### `mxe` (Mutually Exclusive Exons)
+Use for mutually exclusive exon events.
 
 ```bash
 python cli.py motif-map mxe \
@@ -129,28 +124,140 @@ python cli.py motif-map mxe \
   --motifs NA \
   --fasta-root genomedata \
   --genome hg19 \
-  --output results/mxe_rmats \
-  --rMATS temp/MXE.MATS.ReadsOnTargetAndJunctionCounts.txt \
-  --miso NA \
-  --up NA --down NA --background NA
+  --output results/motif_mxe \
+  --rMATS data/test/clip/MXE/test.rMATS.txt \
+  --miso NA --up NA --down NA --background NA
 ```
 
-## Convert Commands
+## Half 2: CLIP Map
+
+### Supported Event Types
+
+- `se`: Skipped Exon
+- `a3ss`: Alternative 3' Splice Site
+- `a5ss`: Alternative 5' Splice Site
+- `ri`: Retained Intron
+- `mxe`: Mutually Exclusive Exons
+
+### Event Subcommand Help
+
+```bash
+python cli.py clip-map se --help
+python cli.py clip-map a3ss --help
+python cli.py clip-map a5ss --help
+python cli.py clip-map ri --help
+python cli.py clip-map mxe --help
+```
+
+### Shared Required Options
+
+- `--peak` / `-p`
+- `--output` / `-o`
+
+### Input Modes (choose one)
+
+- rMATS mode: `--rMATS <file>` with `--miso NA --up NA --down NA --background NA`
+- MISO mode: `--miso <file>` with `--rMATS NA --up NA --down NA --background NA`
+- Coordinate replay mode: `--up <file> --down <file> --background <file>` with `--rMATS NA --miso NA`
+
+### Common Optional Options
+
+- `--label` (default `RBP`)
+- `--intron` (default `250`)
+- `--exon` (default `50`)
+- `--window` (default `10`)
+- `--step` (default `1`)
+- `--sig-fdr` / `--sigFDR`
+- `--sig-delta-psi` / `--sigDeltaPSI`
+- `--separate`
+
+Default thresholds by event:
+
+- `se`, `a3ss`, `ri`, `mxe`: `sigFDR=0.05`, `sigDeltaPSI=0.05`
+- `a5ss`: `sigFDR=0.005`, `sigDeltaPSI=0.01`
+
+### Event Details and Examples
+
+#### `se` (Skipped Exon)
+Use for cassette-exon CLIP enrichment maps.
+
+```bash
+python cli.py clip-map se \
+  --peak data/test/clip/PIPE-CLIP.Clusters.bed \
+  --output results/clip_se \
+  --rMATS data/test/clip/ES/test.rMATS.txt \
+  --miso NA --up NA --down NA --background NA \
+  --label PTB \
+  --sigFDR 0.05 --sigDeltaPSI 0.05
+```
+
+#### `a3ss` (Alternative 3' Splice Site)
+Use for alternative acceptor CLIP enrichment maps.
+
+```bash
+python cli.py clip-map a3ss \
+  --peak data/test/clip/PIPE-CLIP.Clusters.bed \
+  --output results/clip_a3ss \
+  --rMATS data/test/clip/A3SS/test.rMATS.txt \
+  --miso NA --up NA --down NA --background NA \
+  --label RBFOX2 \
+  --sigFDR 0.05 --sigDeltaPSI 0.05
+```
+
+#### `a5ss` (Alternative 5' Splice Site)
+Use for alternative donor CLIP enrichment maps.
+
+```bash
+python cli.py clip-map a5ss \
+  --peak data/test/clip/PIPE-CLIP.Clusters.bed \
+  --output results/clip_a5ss \
+  --rMATS data/test/clip/A5SS/test.rMATS.txt \
+  --miso NA --up NA --down NA --background NA \
+  --label ESRP \
+  --sigFDR 0.005 --sigDeltaPSI 0.01 \
+  --separate
+```
+
+#### `ri` (Retained Intron)
+Use for retained-intron CLIP enrichment maps.
+
+```bash
+python cli.py clip-map ri \
+  --peak data/test/clip/PIPE-CLIP.Clusters.bed \
+  --output results/clip_ri \
+  --rMATS data/test/clip/RI/test.rMATS.txt \
+  --miso NA --up NA --down NA --background NA \
+  --label MBNL1 \
+  --sigFDR 0.05 --sigDeltaPSI 0.05
+```
+
+#### `mxe` (Mutually Exclusive Exons)
+Use for mutually exclusive exon CLIP enrichment maps.
+
+```bash
+python cli.py clip-map mxe \
+  --peak data/test/clip/PIPE-CLIP.Clusters.bed \
+  --output results/clip_mxe \
+  --rMATS data/test/clip/MXE/test.rMATS.txt \
+  --miso NA --up NA --down NA --background NA \
+  --label NOVA1 \
+  --sigFDR 0.05 --sigDeltaPSI 0.05
+```
+
+## Conversion Commands
 
 ```bash
 python cli.py convert miso --help
 ```
 
-SE conversion:
+Examples:
 
 ```bash
-python cli.py convert miso --event se --in testData/ESRP.OE.miso_bf --out temp/se.from_miso.rmats.txt
-```
-
-A3SS conversion:
-
-```bash
+python cli.py convert miso --event se --in data/test/ESRP.OE.miso_bf --out temp/se.from_miso.rmats.txt
 python cli.py convert miso --event a3ss --in path/to/a3ss.miso_bf --out temp/a3ss.from_miso.rmats.txt
+python cli.py convert miso --event a5ss --in path/to/a5ss.miso_bf --out temp/a5ss.from_miso.rmats.txt
+python cli.py convert miso --event ri --in path/to/ri.miso_bf --out temp/ri.from_miso.rmats.txt
+python cli.py convert miso --event mxe --in path/to/mxe.miso_bf --out temp/mxe.from_miso.rmats.txt
 ```
 
 ## Exon Set Commands
@@ -171,7 +278,7 @@ python cli.py exon-sets se \
 
 ## Output Notes
 
-Motif-map runs typically create:
+Motif-map output typically includes:
 
 - `exon/`
 - `fasta/`
@@ -180,3 +287,12 @@ Motif-map runs typically create:
 - `log.motifMap.txt`
 - `pVal.up.vs.bg.RNAmap.txt`
 - `pVal.dn.vs.bg.RNAmap.txt`
+
+CLIP-map output typically includes:
+
+- `exon/`
+- `temp/`
+- `*.RNAmap.txt`
+- `*.pdf` / `*.eps`
+- `log.CLIPSeq*.txt`
+

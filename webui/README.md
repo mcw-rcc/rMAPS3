@@ -1,4 +1,4 @@
-# Web UI Guide
+﻿# Web UI Guide
 
 This folder contains the local Flask web interface for rMAPS 3 motif-map analyses of RBP position-dependent splicing behavior.
 
@@ -43,7 +43,7 @@ Open:
 - `RMAPS_RESULTS_DIR`:
   output directory for web jobs (default: `results/`)
 - `RMAPS_QUICKTEST_DIR`:
-  one-click test data directory (default: `testData/`)
+  one-click test data directory (default: `data/test/`)
 
 ## Key Endpoints
 
@@ -94,3 +94,4 @@ results/<job_id>/           or results/quicktest_<job_id>/
   - Hard refresh browser after JS updates (`Ctrl+F5`).
 - MISO run fails:
   - Ensure Perl is available in the server process `PATH`.
+

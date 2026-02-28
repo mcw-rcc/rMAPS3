@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import logging
 import math
@@ -151,7 +151,7 @@ def create_app() -> Flask:
     app.config["REPO_ROOT"] = repo
     app.config["FASTA_ROOT"] = Path(os.environ.get("RMAPS_FASTA_ROOT", str(repo / "genomedata")))
     app.config["RESULTS_FOLDER"] = Path(os.environ.get("RMAPS_RESULTS_DIR", str(repo / "results")))
-    app.config["QUICK_TEST_DIR"] = Path(os.environ.get("RMAPS_QUICKTEST_DIR", str(repo / "testData")))
+    app.config["QUICK_TEST_DIR"] = Path(os.environ.get("RMAPS_QUICKTEST_DIR", str(repo / "data" / "test")))
     app.config["RESULTS_FOLDER"].mkdir(parents=True, exist_ok=True)
 
     logging.basicConfig(level=logging.INFO, format="%(asctime)s | %(levelname)-8s | %(message)s")
@@ -636,3 +636,4 @@ def register_routes(app: Flask) -> None:
 if __name__ == "__main__":
     app = create_app()
     app.run(debug=True, host="127.0.0.1", port=5000)
+

@@ -1,28 +1,22 @@
-# rMAPS 3
+﻿# rMAPS 3
 
-RNA Map Analysis and Plotting Server (rMAPS) generates RNA maps for analysis of RNA-binding protein (RBP) binding sites with position-dependent functions. It supports analysis of binding sites around differential alternative splicing events for known RBPs and can analyze CLIP-seq peaks around differential alternative splicing events to generate RNA maps of CLIP-seq experiments.
+RNA Map Analysis and Plotting Server (rMAPS) generates RNA maps for RNA-binding protein (RBP) analysis around alternative splicing events.
 
 Original rMAPS website: http://rmaps.cecsresearch.org/
 
 ## What This Project Provides
 
-- The original rMAPS motif-map analysis flow, updated for modern Python environments.
-- Python 3 support across legacy motif-map event engines.
-- `pyfaidx`-based genome access (no `pygr` runtime dependency).
-- Unified CLI (`cli.py`) for:
-  - motif-map generation (`se`, `a3ss`, `a5ss`, `ri`, `mxe`)
-  - MISO-to-rMATS conversion
-  - exon-set generation
-- Local Web UI (`run_web.py` / `webui/`) for browser-driven runs.
+- Original rMAPS motif-map and CLIP-map workflows updated for Python 3.
+- Unified CLI in `cli.py` for motif maps, CLIP maps, MISO conversion, and exon-set generation.
+- Local Web UI launcher in `run_web.py`.
 
 ## Requirements
 
-- Python 3.10+ recommended
-- OS: Linux/macOS/Windows
-- Perl available on `PATH` for MISO conversion (`miso2rMATS*.pl`)
-- Flask for Web UI (`run_web.py`)
-- Optional MiKTeX/TeX Live for native PyX text rendering
-- Optional Ghostscript for native PNG export (not required with Python fallback)
+- Python 3.10+
+- Perl on `PATH` (for MISO converters)
+- Flask (for Web UI)
+- Optional: TeX distribution (PyX text rendering)
+- Optional: Ghostscript (PNG export)
 
 Install dependencies:
 
@@ -32,14 +26,14 @@ pip install -r requirements.txt
 
 ## Documentation
 
-- Installation: [`docs/INSTALL.md`](docs/INSTALL.md)
-- CLI reference: [`docs/CLI_USAGE.md`](docs/CLI_USAGE.md)
+- Installation and genome setup: [`docs/INSTALL.md`](docs/INSTALL.md)
+- Full CLI reference and event-type details: [`docs/CLI_USAGE.md`](docs/CLI_USAGE.md)
 - Web UI usage and API: [`webui/README.md`](webui/README.md)
-- Test scripts and matrix: [`tests/README.md`](tests/README.md)
+- Testing guide: [`tests/README.md`](tests/README.md)
 
 ## Genome Data Layout
 
-This repo expects a FASTA root directory passed as `--fasta-root` (or `--fastaRoot`) with:
+Pass `--fasta-root` (or legacy alias `--fastaRoot`) pointing to:
 
 ```text
 genomedata/
@@ -50,115 +44,52 @@ genomedata/
   ...
 ```
 
-Important:
-- Build name and FASTA name must match (`<build>/<build>.fa`).
-- If you run with `--genome hg19`, the loader uses `genomedata/hg19/hg19.fa`.
-
-For reproducible genome setup (download scripts + SHA256 manifest), see [`docs/INSTALL.md`](docs/INSTALL.md).
+The loader expects `<build>/<build>.fa` under FASTA root.
 
 ## Project Structure
 
-- `cli.py`: primary CLI entrypoint
-- `run_web.py`: local web launcher entrypoint
-- `rmaps_core/`: core importable modules
-- `legacy/`: event-specific motif scripts (`motifMap*_MP.py`)
-- `bin/`: converter/util scripts
-- `scripts/`: genome download and setup helpers
-- `data/`: motif tables and reference motif inputs
-- `testData/`: bundled sample inputs for quick tests
-- `genomedata/`: local genome FASTA root (`<build>/<build>.fa`)
-- `docs/`: installation and CLI docs
-- `tests/`: smoke and integration test runners
-- `webui/`: Flask app, static assets, and templates
+- `cli.py`: CLI entrypoint
+- `run_web.py`: local web launcher
+- `rmaps_core/`: shared dispatch and utility modules
+- `legacy/`: event-specific engines invoked by the CLI
+- `bin/`: helper scripts (`miso2rMATS.*.pl`, `RNA.map.noWiggle.py`, `getExonSets.py`)
+- `data/`: motif reference inputs
+- `data/test/`: bundled sample data
+- `tests/`: Python test suites and legacy shell wrappers
 
-## CLI Usage
+## Quick Start
 
-Top-level help:
+Show CLI help:
 
 ```bash
 python cli.py --help
 ```
 
-Motif-map help:
-
-```bash
-python cli.py motif-map --help
-python cli.py motif-map se --help
-```
-
-Converters:
-
-```bash
-python cli.py convert --help
-python cli.py convert miso --help
-```
-
-Exon sets:
-
-```bash
-python cli.py exon-sets --help
-python cli.py exon-sets se --help
-```
-
-Detailed command examples are in [`docs/CLI_USAGE.md`](docs/CLI_USAGE.md).
-
-## Web UI (Local)
-
-Run the local web UI:
-
-```bash
-python run_web.py
-```
-
-Open:
-
-- `http://127.0.0.1:5000`
-
-See full Web UI documentation in [`webui/README.md`](webui/README.md).
-
-## Outputs
-
-Each run writes to the given `--output` directory:
-
-- `exon/`: `up.coord.txt`, `dn.coord.txt`, `bg.coord.txt`
-- `fasta/`: per-region FASTA windows
-- `maps/`: motif map outputs (`.pdf`, `.png` where available)
-- `temp/`: intermediate files
-- `log.motifMap.txt`: run log
-
-## Testing
-
-Detailed test documentation and commands are in [`tests/README.md`](tests/README.md).
-
-Quick smoke:
+Run smoke checks:
 
 ```bash
 python tests/smoke_cli.py
 ```
 
-Full event matrix:
+For full commands (all event types for motif-map and clip-map), see [`docs/CLI_USAGE.md`](docs/CLI_USAGE.md).
+
+## Web UI (Local)
 
 ```bash
-bash tests/run_all_events.sh
+python run_web.py
 ```
 
-Note: shell test runners under `tests/` require a Bash-compatible environment (Linux/macOS, WSL, or Git Bash on Windows).
+Open `http://127.0.0.1:5000`.
 
 ## Operational Notes
 
-- Use the CLI (`cli.py`) as the public interface.
-- For browser-based runs, use `run_web.py`.
-- Core modules are under `rmaps_core/`.
-- Scripts under `legacy/` are internal implementation details; use the CLI for production runs.
-- `--fasta-root` is the canonical argument; `--fastaRoot` is accepted for compatibility.
+- Use `cli.py` as the stable public interface.
+- `legacy/` scripts are implementation engines.
+- `--fasta-root` is canonical; `--fastaRoot` is accepted for compatibility.
 
 ## Troubleshooting
 
-- `FastaNotFoundError`:
-  - Verify `--genome` and `--fasta-root` match expected layout (`<build>/<build>.fa`).
-- MISO conversion fails:
-  - Ensure Perl is installed and available in `PATH`.
-  - Verify `bin/miso2rMATS.*.pl` scripts exist.
-- PNG files missing:
-  - Native Ghostscript export may be unavailable.
-  - Install optional rendering dependencies from `requirements.txt`.
+- `FastaNotFoundError`: verify `--genome` and `--fasta-root` match `<build>/<build>.fa`.
+- MISO conversion failures: ensure Perl is installed and `bin/miso2rMATS.*.pl` exists.
+- Missing CLIP plots: ensure input yields non-empty up/down/background event groups.
+
