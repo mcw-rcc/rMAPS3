@@ -48,4 +48,5 @@ jobs:
 
       - name: Motif test skipped
         if: steps.motif_fasta.outputs.available != 'true'
-        run: echo "Skipping motif CI test: genomedata/hg19/hg19.fa not found."
+        run: |
+          echo "Skipping motif CI test: genomedata/hg19/hg19.fa not found."
