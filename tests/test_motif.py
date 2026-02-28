@@ -19,27 +19,27 @@ from datetime import datetime
 MOTIF_EVENTS = {
     "se": {
         "name": "Skipped Exon (SE)",
-        "rMATS": "data/test/clip/ES/test.rMATS.txt",
+        "rMATS": "data/test/clip/ES/se.rMATS.txt",
         "output": "results/test_motif_se",
     },
     "a5ss": {
         "name": "Alternative 5' Splice Site (A5SS)",
-        "rMATS": "data/test/clip/A5SS/test.rMATS.txt",
+        "rMATS": "data/test/clip/A5SS/a5ss.rMATS.txt",
         "output": "results/test_motif_a5ss",
     },
     "a3ss": {
         "name": "Alternative 3' Splice Site (A3SS)",
-        "rMATS": "data/test/clip/A3SS/test.rMATS.txt",
+        "rMATS": "data/test/clip/A3SS/a3ss.rMATS.txt",
         "output": "results/test_motif_a3ss",
     },
     "mxe": {
         "name": "Mutually Exclusive Exons (MXE)",
-        "rMATS": "data/test/clip/MXE/test.rMATS.txt",
+        "rMATS": "data/test/clip/MXE/mxe.rMATS.txt",
         "output": "results/test_motif_mxe",
     },
     "ri": {
         "name": "Retained Intron (RI)",
-        "rMATS": "data/test/clip/RI/test.rMATS.txt",
+        "rMATS": "data/test/clip/RI/ri.rMATS.txt",
         "output": "results/test_motif_ri",
     },
 }
@@ -200,4 +200,5 @@ Examples:
 
 if __name__ == "__main__":
     sys.exit(main())
+
 

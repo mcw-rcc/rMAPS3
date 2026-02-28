@@ -3,6 +3,10 @@ const POLL_INTERVAL = 2000;
 const MAX_POLL_TIME = 600000;
 
 const form = document.getElementById("analysisForm");
+const analysisTypeInput = document.getElementById("analysisType");
+const modeMotifBtn = document.getElementById("modeMotifBtn");
+const modeClipBtn = document.getElementById("modeClipBtn");
+const modeSubtitle = document.getElementById("modeSubtitle");
 const submitBtn = document.getElementById("submitBtn");
 const quickTestBtn = document.getElementById("quickTestBtn");
 const loadJobBtn = document.getElementById("loadJobBtn");
@@ -11,10 +15,15 @@ const recentJobsSelect = document.getElementById("recentJobsSelect");
 const backBtn = document.getElementById("backBtn");
 const eventTypeSelect = document.getElementById("eventType");
 const genomeSelect = document.getElementById("genome");
+const genomeGroup = document.getElementById("genomeGroup");
 const inputTypeRadios = document.querySelectorAll('input[name="input_type"]');
+const motifFilesFieldset = document.getElementById("motifFilesFieldset");
+const motifFilesLegend = document.getElementById("motifFilesLegend");
+const analysisParamsLegend = document.getElementById("analysisParamsLegend");
 const rmatsInput = document.getElementById("rmatsInput");
 const misoInput = document.getElementById("misoInput");
 const coordinatesInput = document.getElementById("coordinatesInput");
+const peakInput = document.getElementById("peakInput");
 const resultsDiv = document.getElementById("results");
 const liveLogsEl = document.getElementById("liveLogs");
 const liveLogsWrapEl = document.getElementById("liveLogsWrap");
@@ -22,8 +31,10 @@ const liveLogsWrapEl = document.getElementById("liveLogsWrap");
 let currentJobId = null;
 let pollStartTime = null;
 let currentOutputDir = null;
+let currentJobAnalysisType = "motif";
 let suppressHistoryPush = false;
 let loadJobInFlight = false;
+let currentAnalysisType = "motif";
 
 document.addEventListener("DOMContentLoaded", () => {
   loadGenomes();
@@ -94,40 +105,21 @@ async function loadGenomes() {
 }
 
 function setupEventListeners() {
+  if (modeMotifBtn) {
+    modeMotifBtn.addEventListener("click", () => setAnalysisMode("motif"));
+  }
+  if (modeClipBtn) {
+    modeClipBtn.addEventListener("click", () => setAnalysisMode("clip"));
+  }
+
   inputTypeRadios.forEach((radio) => {
     radio.addEventListener("change", (e) => {
-      if (e.target.value === "rmats") {
-        rmatsInput.style.display = "block";
-        misoInput.style.display = "none";
-        coordinatesInput.style.display = "none";
-        document.getElementById("rmatsFile").required = true;
-        document.getElementById("misoFile").required = false;
-        document.getElementById("upFile").required = false;
-        document.getElementById("dnFile").required = false;
-        document.getElementById("bgFile").required = false;
-      } else if (e.target.value === "miso") {
-        rmatsInput.style.display = "none";
-        misoInput.style.display = "block";
-        coordinatesInput.style.display = "none";
-        document.getElementById("rmatsFile").required = false;
-        document.getElementById("misoFile").required = true;
-        document.getElementById("upFile").required = false;
-        document.getElementById("dnFile").required = false;
-        document.getElementById("bgFile").required = false;
-      } else {
-        rmatsInput.style.display = "none";
-        misoInput.style.display = "none";
-        coordinatesInput.style.display = "block";
-        document.getElementById("rmatsFile").required = false;
-        document.getElementById("misoFile").required = false;
-        document.getElementById("upFile").required = true;
-        document.getElementById("dnFile").required = true;
-        document.getElementById("bgFile").required = true;
-      }
+      updateInputModeUI(e.target.value);
     });
   });
 
   form.addEventListener("submit", handleFormSubmit);
+  eventTypeSelect.addEventListener("change", applyDefaultParametersForModeAndEvent);
   if (quickTestBtn) {
     quickTestBtn.addEventListener("click", runQuickTest);
   }
@@ -146,10 +138,123 @@ function setupEventListeners() {
     backBtn.addEventListener("click", resetUI);
   }
   form.addEventListener("change", saveToStorage);
+  setAnalysisMode(currentAnalysisType);
+}
+
+function setAnalysisMode(mode) {
+  currentAnalysisType = mode === "clip" ? "clip" : "motif";
+  if (analysisTypeInput) {
+    analysisTypeInput.value = currentAnalysisType;
+  }
+
+  if (modeMotifBtn && modeClipBtn) {
+    modeMotifBtn.classList.toggle("active", currentAnalysisType === "motif");
+    modeClipBtn.classList.toggle("active", currentAnalysisType === "clip");
+  }
+
+  if (modeSubtitle) {
+    modeSubtitle.textContent =
+      currentAnalysisType === "motif"
+        ? "Local interface for motif map analysis"
+        : "Local interface for CLIP-seq RNA map analysis";
+  }
+
+  if (genomeGroup) {
+    genomeGroup.style.display = currentAnalysisType === "motif" ? "block" : "none";
+  }
+  genomeSelect.required = currentAnalysisType === "motif";
+
+  if (motifFilesFieldset) {
+    motifFilesFieldset.style.display = currentAnalysisType === "motif" ? "block" : "none";
+  }
+  if (motifFilesLegend) {
+    motifFilesLegend.textContent = "3. Select RBP Motifs";
+  }
+  if (analysisParamsLegend) {
+    analysisParamsLegend.textContent =
+      currentAnalysisType === "motif"
+        ? "4. Analysis Parameters (Optional)"
+        : "3. Analysis Parameters (Optional)";
+  }
+  const knownMotifs = document.getElementById("knownMotifs");
+  const customMotifs = document.getElementById("customMotifs");
+  if (knownMotifs) knownMotifs.required = currentAnalysisType === "motif";
+  if (customMotifs && currentAnalysisType === "clip") customMotifs.required = false;
+
+  if (peakInput) {
+    peakInput.style.display = currentAnalysisType === "clip" ? "block" : "none";
+  }
+  const peakFile = document.getElementById("peakFile");
+  if (peakFile) peakFile.required = currentAnalysisType === "clip";
+
+  const selectedInput = document.querySelector('input[name="input_type"]:checked');
+  updateInputModeUI(selectedInput ? selectedInput.value : "rmats");
+  applyDefaultParametersForModeAndEvent();
+  updateQuickTestTooltip();
+}
+
+function updateInputModeUI(inputType) {
+  if (inputType === "rmats") {
+    rmatsInput.style.display = "block";
+    misoInput.style.display = "none";
+    coordinatesInput.style.display = "none";
+    document.getElementById("rmatsFile").required = true;
+    document.getElementById("misoFile").required = false;
+    document.getElementById("upFile").required = false;
+    document.getElementById("dnFile").required = false;
+    document.getElementById("bgFile").required = false;
+  } else if (inputType === "miso") {
+    rmatsInput.style.display = "none";
+    misoInput.style.display = "block";
+    coordinatesInput.style.display = "none";
+    document.getElementById("rmatsFile").required = false;
+    document.getElementById("misoFile").required = true;
+    document.getElementById("upFile").required = false;
+    document.getElementById("dnFile").required = false;
+    document.getElementById("bgFile").required = false;
+  } else {
+    rmatsInput.style.display = "none";
+    misoInput.style.display = "none";
+    coordinatesInput.style.display = "block";
+    document.getElementById("rmatsFile").required = false;
+    document.getElementById("misoFile").required = false;
+    document.getElementById("upFile").required = true;
+    document.getElementById("dnFile").required = true;
+    document.getElementById("bgFile").required = true;
+  }
+}
+
+function applyDefaultParametersForModeAndEvent() {
+  const windowInput = document.getElementById("window");
+  const fdrInput = document.getElementById("fdr");
+  const deltaInput = document.getElementById("deltaPsi");
+  if (!windowInput || !fdrInput || !deltaInput) return;
+
+  if (currentAnalysisType === "clip" && eventTypeSelect.value === "a5ss") {
+    windowInput.value = "10";
+    fdrInput.value = "0.005";
+    deltaInput.value = "0.01";
+    return;
+  }
+
+  windowInput.value = currentAnalysisType === "clip" ? "10" : "50";
+  fdrInput.value = "0.05";
+  deltaInput.value = "0.05";
+}
+
+function updateQuickTestTooltip() {
+  if (!quickTestBtn) return;
+  const tip =
+    currentAnalysisType === "clip"
+      ? "Run one-click CLIP-seq test using bundled CLIP sample inputs."
+      : "Run one-click Motif Map test using bundled motif sample inputs.";
+  quickTestBtn.title = tip;
+  quickTestBtn.setAttribute("aria-label", tip);
 }
 
 async function handleFormSubmit(e) {
   e.preventDefault();
+  const analysisType = analysisTypeInput ? analysisTypeInput.value : "motif";
   if (!form.checkValidity()) {
     form.reportValidity();
     return;
@@ -180,9 +285,16 @@ async function handleFormSubmit(e) {
       return;
     }
   }
-  if (!formData.get("known_motifs_file") || formData.get("known_motifs_file").size === 0) {
-    showError("Please upload a known motifs file");
-    return;
+  if (analysisType === "motif") {
+    if (!formData.get("known_motifs_file") || formData.get("known_motifs_file").size === 0) {
+      showError("Please upload a known motifs file");
+      return;
+    }
+  } else {
+    if (!formData.get("peak_file") || formData.get("peak_file").size === 0) {
+      showError("Please upload a CLIP-seq peak file");
+      return;
+    }
   }
 
   setRunButtonsDisabled(true, "Submitting...");
@@ -197,6 +309,7 @@ async function handleFormSubmit(e) {
 
     currentJobId = data.job_id;
     currentOutputDir = data.output_dir || null;
+    currentJobAnalysisType = data.analysis_type || currentAnalysisType;
     pollStartTime = Date.now();
     updateJobId(currentJobId);
     setUrlForJob(currentJobId);
@@ -213,12 +326,13 @@ async function handleFormSubmit(e) {
 async function runQuickTest() {
   setRunButtonsDisabled(true, "Starting Test...");
   try {
+    const analysisType = analysisTypeInput ? analysisTypeInput.value : "motif";
     const eventType = eventTypeSelect.value || "se";
     const genome = genomeSelect.value || "hg19";
     const response = await fetch(`${API_BASE}/quick-test/run`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ event_type: eventType, genome }),
+      body: JSON.stringify({ analysis_type: analysisType, event_type: eventType, genome }),
     });
     const data = await response.json();
     if (!response.ok || !data.success) {
@@ -234,6 +348,7 @@ async function runQuickTest() {
 
     currentJobId = data.job_id;
     currentOutputDir = data.output_dir || null;
+    currentJobAnalysisType = data.analysis_type || currentAnalysisType;
     pollStartTime = Date.now();
     updateJobId(currentJobId);
     setUrlForJob(currentJobId);
@@ -305,6 +420,7 @@ async function loadExistingJob(forcedJobId = null, skipHistory = false) {
 
     currentJobId = resolvedJobId;
     currentOutputDir = statusData.output_dir || null;
+    currentJobAnalysisType = statusData.analysis_type || currentJobAnalysisType;
     pollStartTime = Date.now();
     updateJobId(currentJobId);
     if (!skipHistory) {
@@ -367,6 +483,7 @@ async function pollJobStatus() {
     }
 
     currentOutputDir = data.output_dir || currentOutputDir;
+    currentJobAnalysisType = data.analysis_type || currentJobAnalysisType;
     updateJobId(currentJobId);
     updateStatusDisplay(data.status, data.message);
     if (data.status === "completed") {
@@ -446,20 +563,33 @@ async function showResults(results, outputDir, note = "") {
   }
 
   if (!results || results.length === 0) {
-    html += "<p>No significant motifs found or summary table unavailable.</p>";
-  } else {
-    const topResults = results.slice(0, 10);
-    html += "<h3>Top Motifs</h3>";
-    html += "<table><thead><tr><th>Motif</th><th>p(up vs bg)</th><th>-log10 p(up)</th><th>p(dn vs bg)</th><th>-log10 p(dn)</th></tr></thead><tbody>";
-    for (const result of topResults) {
-      html += `<tr><td><strong>${result.rbp}</strong></td><td>${parseFloat(result.pval_up_vs_bg).toExponential(2)}</td><td>${parseFloat(result.log_pval_up).toFixed(2)}</td><td>${parseFloat(result.pval_dn_vs_bg).toExponential(2)}</td><td>${parseFloat(result.log_pval_dn).toFixed(2)}</td></tr>`;
+    if (currentJobAnalysisType === "clip") {
+      html += "<p>CLIP-seq run completed. Use the result folder paths below for generated RNA map files and logs.</p>";
+    } else {
+      html += "<p>No significant motifs found or summary table unavailable.</p>";
     }
-    html += "</tbody></table>";
-    if (results.length > topResults.length) {
-      html += `<p>Showing top ${topResults.length} of ${results.length} motifs.</p>`;
+  } else {
+    if (currentJobAnalysisType === "clip") {
+      html += "<h3>Generated CLIP Outputs</h3>";
+      html += "<table><thead><tr><th>File</th><th>Type</th></tr></thead><tbody>";
+      for (const result of results) {
+        html += `<tr><td><strong>${result.path}</strong></td><td>${result.kind}</td></tr>`;
+      }
+      html += "</tbody></table>";
+    } else {
+      const topResults = results.slice(0, 10);
+      html += "<h3>Top Motifs</h3>";
+      html += "<table><thead><tr><th>Motif</th><th>p(up vs bg)</th><th>-log10 p(up)</th><th>p(dn vs bg)</th><th>-log10 p(dn)</th></tr></thead><tbody>";
+      for (const result of topResults) {
+        html += `<tr><td><strong>${result.rbp}</strong></td><td>${parseFloat(result.pval_up_vs_bg).toExponential(2)}</td><td>${parseFloat(result.log_pval_up).toFixed(2)}</td><td>${parseFloat(result.pval_dn_vs_bg).toExponential(2)}</td><td>${parseFloat(result.log_pval_dn).toFixed(2)}</td></tr>`;
+      }
+      html += "</tbody></table>";
+      if (results.length > topResults.length) {
+        html += `<p>Showing top ${topResults.length} of ${results.length} motifs.</p>`;
+      }
     }
   }
-  html += `<div style="margin-top: 18px;"><h3>Result Folder</h3><pre>${outputDir || "(unknown path)"}</pre><p>Logs: ${(outputDir || "(unknown path)") + "/log.motifMap.txt"}</p></div>`;
+  html += `<div style="margin-top: 18px;"><h3>Result Folder</h3><pre>${outputDir || "(unknown path)"}</pre></div>`;
 
   content.innerHTML = html;
   updateStatusDisplay("completed", "Analysis complete");
@@ -487,6 +617,7 @@ function showMessage(message, type = "info") {
 function resetUI() {
   currentJobId = null;
   currentOutputDir = null;
+  currentJobAnalysisType = currentAnalysisType;
   setRunButtonsDisabled(false);
   updateJobId("");
   setUrlForHome();
@@ -511,6 +642,7 @@ function setRunButtonsDisabled(disabled, submitLabel = "Run Analysis") {
 function saveToStorage() {
   const selectedInput = document.querySelector('input[name="input_type"]:checked');
   const formState = {
+    analysisType: currentAnalysisType,
     eventType: eventTypeSelect.value,
     genome: genomeSelect.value,
     inputType: selectedInput ? selectedInput.value : "rmats",
@@ -524,6 +656,7 @@ function loadFromStorage() {
   if (!saved) return;
   try {
     const state = JSON.parse(saved);
+    if (state.analysisType) setAnalysisMode(state.analysisType);
     if (state.eventType) eventTypeSelect.value = state.eventType;
     if (state.inputType) {
       const radio = document.querySelector(`input[name="input_type"][value="${state.inputType}"]`);

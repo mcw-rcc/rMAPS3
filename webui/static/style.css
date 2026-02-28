@@ -41,6 +41,24 @@ body {
   font-size: 28px;
 }
 
+.mode-toggle {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.mode-btn {
+  border: 1px solid #b8d4f5;
+  background-color: #eef5ff;
+  color: #0b4b99;
+}
+
+.mode-btn.active {
+  background-color: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+}
+
 form {
   background: #fff;
   padding: 24px;

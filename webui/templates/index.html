@@ -3,17 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>rMAPS 3 - Motif MAP</title>
+    <title>rMAPS 3</title>
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>rMAPS 3 - Motif MAP</h1>
-            <p>Local interface for rMAPS 3 RBP position-dependent splicing analysis</p>
+            <h1>rMAPS 3</h1>
+            <p id="modeSubtitle">Local interface for motif map and CLIP-seq RNA map analysis</p>
+        </div>
+
+        <div class="mode-toggle">
+            <button type="button" id="modeMotifBtn" class="mode-btn active">Motif Map</button>
+            <button type="button" id="modeClipBtn" class="mode-btn">CLIP-seq Map</button>
         </div>
 
         <form id="analysisForm" enctype="multipart/form-data">
+            <input type="hidden" id="analysisType" name="analysis_type" value="motif">
             <fieldset>
                 <legend>1. Select Analysis Parameters</legend>
 
@@ -29,7 +35,7 @@
                     </select>
                 </div>
 
-                <div class="form-group">
+                <div class="form-group" id="genomeGroup">
                     <label for="genome">Genome Assembly *</label>
                     <select id="genome" name="genome" required>
                         <option value="">-- Loading Genomes --</option>
@@ -46,6 +52,13 @@
                         <label><input type="radio" name="input_type" value="rmats" checked> rMATS Output File</label>
                         <label><input type="radio" name="input_type" value="miso"> MISO Output File</label>
                         <label><input type="radio" name="input_type" value="coordinates"> User Coordinate Files</label>
+                    </div>
+                </div>
+
+                <div id="peakInput" class="input-section" style="display: none;">
+                    <div class="form-group">
+                        <label for="peakFile">CLIP-seq Peak File (BED) *</label>
+                        <input type="file" id="peakFile" name="peak_file" accept=".bed,.txt">
                     </div>
                 </div>
 
@@ -79,8 +92,8 @@
                 </div>
             </fieldset>
 
-            <fieldset>
-                <legend>3. Select RBP Motifs</legend>
+            <fieldset id="motifFilesFieldset">
+                <legend id="motifFilesLegend">3. Select RBP Motifs</legend>
 
                 <div class="form-group">
                     <label for="knownMotifs">Known RBP Motifs File *</label>
@@ -94,7 +107,7 @@
             </fieldset>
 
             <fieldset>
-                <legend>4. Analysis Parameters (Optional)</legend>
+                <legend id="analysisParamsLegend">4. Analysis Parameters (Optional)</legend>
 
                 <div class="form-group">
                     <label for="window">Sliding Window Size</label>

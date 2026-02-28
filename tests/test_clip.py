@@ -18,31 +18,31 @@ from datetime import datetime
 CLIP_EVENTS = {
     "se": {
         "name": "Skipped Exon (SE)",
-        "rMATS": "data/test/clip/ES/test.rMATS.txt",
+        "rMATS": "data/test/clip/ES/se.rMATS.txt",
         "peak": "data/test/clip/PIPE-CLIP.Clusters.bed",
         "output": "results/test_clip_se",
     },
     "a5ss": {
         "name": "Alternative 5' Splice Site (A5SS)",
-        "rMATS": "data/test/clip/A5SS/test.rMATS.txt",
+        "rMATS": "data/test/clip/A5SS/a5ss.rMATS.txt",
         "peak": "data/test/clip/PIPE-CLIP.Clusters.bed",
         "output": "results/test_clip_a5ss",
     },
     "a3ss": {
         "name": "Alternative 3' Splice Site (A3SS)",
-        "rMATS": "data/test/clip/A3SS/test.rMATS.txt",
+        "rMATS": "data/test/clip/A3SS/a3ss.rMATS.txt",
         "peak": "data/test/clip/PIPE-CLIP.Clusters.bed",
         "output": "results/test_clip_a3ss",
     },
     "mxe": {
         "name": "Mutually Exclusive Exons (MXE)",
-        "rMATS": "data/test/clip/MXE/test.rMATS.txt",
+        "rMATS": "data/test/clip/MXE/mxe.rMATS.txt",
         "peak": "data/test/clip/PIPE-CLIP.Clusters.bed",
         "output": "results/test_clip_mxe",
     },
     "ri": {
         "name": "Retained Intron (RI)",
-        "rMATS": "data/test/clip/RI/test.rMATS.txt",
+        "rMATS": "data/test/clip/RI/ri.rMATS.txt",
         "peak": "data/test/clip/PIPE-CLIP.Clusters.bed",
         "output": "results/test_clip_ri",
     },
@@ -200,4 +200,5 @@ Examples:
 
 if __name__ == "__main__":
     sys.exit(main())
+
 

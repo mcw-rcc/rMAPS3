@@ -10,7 +10,7 @@ echo "Testing CLIP-seq A3SS analysis..."
 python cli.py clip-map a3ss \
   --peak data/test/clip/PIPE-CLIP.Clusters.bed \
   --output results/clip_test_a3ss \
-  --rMATS data/test/clip/A3SS/test.rMATS.txt \
+  --rMATS data/test/clip/A3SS/a3ss.rMATS.txt \
   --miso NA \
   --up NA \
   --down NA \
@@ -18,4 +18,5 @@ python cli.py clip-map a3ss \
   --label TestRBP
 
 echo "CLIP-seq A3SS test completed! Check results/clip_test_a3ss/"
+
 

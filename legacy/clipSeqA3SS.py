@@ -112,7 +112,7 @@ def main():
     cmd = [
         sys.executable, str(bin_path / 'RNA.map.noWiggle.py'),
         str(exon_path), str(Path(args.peakFile).resolve()),
-        '250', '50', str(args.window), str(args.step), str(args.sigFDR),
+        str(args.intron), str(args.exon), str(args.window), str(args.step), str(args.sigFDR),
         args.label, str(out_path), str(nu), str(nd), str(nb), str(int(args.separate))
     ]
     

@@ -1,6 +1,6 @@
 ﻿# Web UI Guide
 
-This folder contains the local Flask web interface for rMAPS 3 motif-map analyses of RBP position-dependent splicing behavior.
+This folder contains the local Flask web interface for rMAPS 3 motif-map and CLIP-seq RNA-map analyses.
 
 ## Start
 
@@ -16,11 +16,15 @@ Open:
 
 ## Features
 
-- Run motif-map jobs for: `SE`, `A3SS`, `A5SS`, `RI`, `MXE`
+- Top toggle between:
+  - Motif Map
+  - CLIP-seq Map
+- Run jobs for: `SE`, `A3SS`, `A5SS`, `RI`, `MXE`
 - Input modes:
   - rMATS upload
   - MISO upload
   - coordinate file upload (`up`, `down`, `bg`)
+- CLIP-seq mode peak upload (`.bed`) for `clip-map`
 - Live status polling
 - Live log tail during job execution
 - One-click local test run
@@ -30,7 +34,8 @@ Open:
 
 ## One-Click Test Genome Behavior
 
-- Quick test uses the genome selected in the UI genome dropdown.
+- Motif quick test uses the genome selected in the UI genome dropdown.
+- CLIP quick test does not require genome FASTA.
 - If no genome is provided by the client, the server default is `hg19`.
 - Required FASTA layout for the selected genome is:
   - `genomedata/<build>/<build>.fa`
@@ -44,6 +49,8 @@ Open:
   output directory for web jobs (default: `results/`)
 - `RMAPS_QUICKTEST_DIR`:
   one-click test data directory (default: `data/test/`)
+- `RMAPS_MAX_UPLOAD_MB`:
+  maximum upload size in MB (default: `200`)
 
 ## Key Endpoints
 
@@ -51,8 +58,8 @@ Open:
   Web UI
 - `GET /api/genomes`:
   Supported genomes + local availability
-- `GET /api/events`:
-  Supported event types
+- `GET /api/events?analysis_type=motif|clip`:
+  Supported event types for selected analysis mode
 - `POST /api/submit`:
   Submit user job
 - `POST /api/quick-test/run`:
@@ -62,7 +69,7 @@ Open:
 - `GET /api/logs/<job_id>`:
   Filtered live logs
 - `GET /api/results/<job_id>`:
-  Top summary rows (with legacy fallback parsing)
+  Motif summary rows or CLIP output file list
 - `GET /api/jobs`:
   Recent jobs list
 
@@ -72,13 +79,21 @@ Each web job writes under:
 
 ```text
 results/<job_id>/           or results/quicktest_<job_id>/
-  exon/
-  fasta/
-  maps/
-  temp/
-  log.motifMap.txt
-  pVal.up.vs.bg.RNAmap.txt
-  pVal.dn.vs.bg.RNAmap.txt
+  motif jobs:
+    exon/
+    fasta/
+    maps/
+    temp/
+    log.motifMap.txt
+    pVal.up.vs.bg.RNAmap.txt
+    pVal.dn.vs.bg.RNAmap.txt
+
+  clip jobs:
+    exon/
+    temp/
+    log.CLIPSeq3.0.0.txt
+    *.RNAmap.txt
+    *.pdf / *.eps
 ```
 
 ## Troubleshooting

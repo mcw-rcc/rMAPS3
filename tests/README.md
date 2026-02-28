@@ -72,12 +72,20 @@ Common:
 CLIP tests use:
 
 - `data/test/clip/PIPE-CLIP.Clusters.bed`
-- `data/test/clip/{ES,A5SS,A3SS,MXE,RI}/test.rMATS.txt`
+- `data/test/clip/ES/se.rMATS.txt`
+- `data/test/clip/A3SS/a3ss.rMATS.txt`
+- `data/test/clip/A5SS/a5ss.rMATS.txt`
+- `data/test/clip/RI/ri.rMATS.txt`
+- `data/test/clip/MXE/mxe.rMATS.txt`
 
 Motif tests use:
 
 - `data/testMotifs.txt`
-- `data/test/clip/{ES,A5SS,A3SS,MXE,RI}/test.rMATS.txt`
+- `data/test/clip/ES/se.rMATS.txt`
+- `data/test/clip/A3SS/a3ss.rMATS.txt`
+- `data/test/clip/A5SS/a5ss.rMATS.txt`
+- `data/test/clip/RI/ri.rMATS.txt`
+- `data/test/clip/MXE/mxe.rMATS.txt`
 - FASTA files under `<fasta-root>/<genome>/<genome>.fa`
 
 Optional:
@@ -89,4 +97,5 @@ Optional:
 
 Legacy shell runners are kept under `tests/legacy/` for backward compatibility.
 Use the Python suites above for standard validation.
+
 

@@ -15,10 +15,12 @@ from flask import Flask, jsonify, render_template, request
 
 try:
     from rmaps_core.motif_map_core import EVENT_SPECS, run_motif_map
+    from rmaps_core.clip_core import CLIP_EVENT_SPECS, run_clip_map
 except ModuleNotFoundError:
     # Allow running `python webui/app.py` directly.
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
     from rmaps_core.motif_map_core import EVENT_SPECS, run_motif_map
+    from rmaps_core.clip_core import CLIP_EVENT_SPECS, run_clip_map
 
 LOGGER = logging.getLogger(__name__)
 SUPPORTED_GENOMES = {
@@ -130,6 +132,11 @@ def _normalize_event(value: str) -> str:
     return value.strip().lower()
 
 
+def _normalize_analysis_type(value: str) -> str:
+    v = (value or "").strip().lower()
+    return "clip" if v == "clip" else "motif"
+
+
 def _create_job_dir(base: Path, prefix: str = "") -> Path:
     job_id = str(uuid.uuid4())[:8]
     name = f"{prefix}{job_id}" if prefix else job_id
@@ -145,7 +152,8 @@ def create_app() -> Flask:
         static_folder=str(Path(__file__).resolve().parent / "static"),
         static_url_path="/static",
     )
-    app.config["MAX_CONTENT_LENGTH"] = 50 * 1024 * 1024
+    max_upload_mb = int(os.environ.get("RMAPS_MAX_UPLOAD_MB", "200"))
+    app.config["MAX_CONTENT_LENGTH"] = max_upload_mb * 1024 * 1024
 
     repo = _repo_root()
     app.config["REPO_ROOT"] = repo
@@ -174,10 +182,14 @@ def register_routes(app: Flask) -> None:
         candidates = [results_root / job_id, results_root / f"quicktest_{job_id}"]
         for path in candidates:
             if path.exists() and path.is_dir():
-                log_exists = (path / "log.motifMap.txt").exists()
+                motif_log = path / "log.motifMap.txt"
+                clip_log = path / "log.CLIPSeq3.0.0.txt"
+                log_exists = motif_log.exists() or clip_log.exists()
+                analysis_type = "clip" if clip_log.exists() else "motif"
                 status = "completed" if log_exists else "unknown"
                 return {
                     "status": status,
+                    "analysis_type": analysis_type,
                     "event_type": "unknown",
                     "genome": "unknown",
                     "created": datetime.fromtimestamp(path.stat().st_mtime),
@@ -187,8 +199,26 @@ def register_routes(app: Flask) -> None:
                 }
         return None
 
-    def quick_test_files() -> dict[str, Path]:
+    def quick_test_files(analysis_type: str = "motif", event_type: str = "se") -> dict[str, Path]:
         root = Path(app.config["QUICK_TEST_DIR"])
+        analysis_type = _normalize_analysis_type(analysis_type)
+        event_key = _normalize_event(event_type)
+
+        if analysis_type == "clip":
+            clip_event_file = {
+                "se": ("ES", "se.rMATS.txt"),
+                "a3ss": ("A3SS", "a3ss.rMATS.txt"),
+                "a5ss": ("A5SS", "a5ss.rMATS.txt"),
+                "ri": ("RI", "ri.rMATS.txt"),
+                "mxe": ("MXE", "mxe.rMATS.txt"),
+            }.get(event_key, ("ES", "se.rMATS.txt"))
+            clip_event_dir, clip_rmats = clip_event_file
+            return {
+                "root": root,
+                "rmats": root / "clip" / clip_event_dir / clip_rmats,
+                "peak": root / "clip" / "PIPE-CLIP.Clusters.bed",
+            }
+
         rmats_candidates = [
             root / "motifMap.testEvents.rMATS.txt",
             root / "SE.MATS.ReadsOnTargetAndJunctionCounts.txt",
@@ -217,10 +247,11 @@ def register_routes(app: Flask) -> None:
             "motifs": first_existing(motifs_candidates),
         }
 
-    def missing_quick_test_paths() -> list[str]:
-        q = quick_test_files()
+    def missing_quick_test_paths(analysis_type: str = "motif", event_type: str = "se") -> list[str]:
+        q = quick_test_files(analysis_type=analysis_type, event_type=event_type)
         out = []
-        for key in ("rmats", "known_motifs", "motifs"):
+        keys = ("rmats", "peak") if _normalize_analysis_type(analysis_type) == "clip" else ("rmats", "known_motifs", "motifs")
+        for key in keys:
             p = q[key]
             if not p.exists() or not p.is_file():
                 out.append(str(p))
@@ -237,28 +268,49 @@ def register_routes(app: Flask) -> None:
         params = job["params"]
         input_files = job["input_files"]
         event = _normalize_event(job["event_type"])
+        analysis_type = _normalize_analysis_type(job.get("analysis_type", "motif"))
 
-        code = run_motif_map(
-            event=event,
-            known_motifs=Path(input_files["known_motifs"]),
-            motifs=input_files.get("motifs", "NA"),
-            fasta_root=Path(app.config["FASTA_ROOT"]),
-            genome=job["genome"],
-            output=Path(job["output_dir"]),
-            rmats=input_files.get("rmats", "NA"),
-            miso=input_files.get("miso", "NA"),
-            up=input_files.get("up", "NA"),
-            down=input_files.get("down", "NA"),
-            background=input_files.get("bg", "NA"),
-            label=params["rbp_label"],
-            intron=params["intron_len"],
-            exon=params["exon_len"],
-            window=params["window_size"],
-            step=params["step_size"],
-            sig_fdr=params["sig_fdr"],
-            sig_delta_psi=params["sig_delta_psi"],
-            separate=False,
-        )
+        if analysis_type == "clip":
+            code = run_clip_map(
+                event=event,
+                peak=Path(input_files["peak"]),
+                output=Path(job["output_dir"]),
+                rmats=input_files.get("rmats", "NA"),
+                miso=input_files.get("miso", "NA"),
+                up=input_files.get("up", "NA"),
+                down=input_files.get("down", "NA"),
+                background=input_files.get("bg", "NA"),
+                label=params["rbp_label"],
+                intron=params["intron_len"],
+                exon=params["exon_len"],
+                window=params["window_size"],
+                step=params["step_size"],
+                sig_fdr=params["sig_fdr"],
+                sig_delta_psi=params["sig_delta_psi"],
+                separate=False,
+            )
+        else:
+            code = run_motif_map(
+                event=event,
+                known_motifs=Path(input_files["known_motifs"]),
+                motifs=input_files.get("motifs", "NA"),
+                fasta_root=Path(app.config["FASTA_ROOT"]),
+                genome=job["genome"],
+                output=Path(job["output_dir"]),
+                rmats=input_files.get("rmats", "NA"),
+                miso=input_files.get("miso", "NA"),
+                up=input_files.get("up", "NA"),
+                down=input_files.get("down", "NA"),
+                background=input_files.get("bg", "NA"),
+                label=params["rbp_label"],
+                intron=params["intron_len"],
+                exon=params["exon_len"],
+                window=params["window_size"],
+                step=params["step_size"],
+                sig_fdr=params["sig_fdr"],
+                sig_delta_psi=params["sig_delta_psi"],
+                separate=False,
+            )
 
         with app.jobs_lock:
             if job_id not in app.jobs:
@@ -276,13 +328,15 @@ def register_routes(app: Flask) -> None:
 
     @app.get("/api/events")
     def get_events():
+        analysis_type = _normalize_analysis_type(request.args.get("analysis_type", "motif"))
+        specs = CLIP_EVENT_SPECS if analysis_type == "clip" else EVENT_SPECS
         events = []
-        for code in EVENT_SPECS:
+        for code in specs:
             events.append(
                 {
                     "code": code,
-                    "name": EVENT_SPECS[code].name,
-                    "description": f"{EVENT_SPECS[code].name} event",
+                    "name": specs[code].name,
+                    "description": f"{specs[code].name} event",
                 }
             )
         return jsonify({"success": True, "events": events}), 200
@@ -315,18 +369,23 @@ def register_routes(app: Flask) -> None:
 
     @app.get("/api/quick-test/config")
     def quick_test_config():
-        q = quick_test_files()
-        missing = missing_quick_test_paths()
+        analysis_type = _normalize_analysis_type(request.args.get("analysis_type", "motif"))
+        event_type = _normalize_event(request.args.get("event_type", "se"))
+        q = quick_test_files(analysis_type=analysis_type, event_type=event_type)
+        missing = missing_quick_test_paths(analysis_type=analysis_type, event_type=event_type)
+        required_files: dict[str, str] = {"rmats": str(q["rmats"])}
+        if analysis_type == "clip":
+            required_files["peak"] = str(q["peak"])
+        else:
+            required_files["known_motifs"] = str(q["known_motifs"])
+            required_files["motifs"] = str(q["motifs"])
         return (
             jsonify(
                 {
                     "success": True,
+                    "analysis_type": analysis_type,
                     "quick_test_dir": str(q["root"]),
-                    "required_files": {
-                        "rmats": str(q["rmats"]),
-                        "known_motifs": str(q["known_motifs"]),
-                        "motifs": str(q["motifs"]),
-                    },
+                    "required_files": required_files,
                     "missing_files": missing,
                     "ready": len(missing) == 0,
                 }
@@ -336,8 +395,17 @@ def register_routes(app: Flask) -> None:
 
     @app.post("/api/quick-test/run")
     def run_quick_test():
-        missing = missing_quick_test_paths()
-        q = quick_test_files()
+        payload = request.get_json(silent=True) or {}
+        analysis_type = _normalize_analysis_type(payload.get("analysis_type", "motif"))
+        event_type = _normalize_event(payload.get("event_type", "se"))
+        genome = payload.get("genome", "hg19") if analysis_type == "motif" else "NA"
+
+        event_specs = CLIP_EVENT_SPECS if analysis_type == "clip" else EVENT_SPECS
+        if event_type not in event_specs:
+            return jsonify({"success": False, "error": f"Unsupported event type: {event_type}"}), 400
+
+        missing = missing_quick_test_paths(analysis_type=analysis_type, event_type=event_type)
+        q = quick_test_files(analysis_type=analysis_type, event_type=event_type)
         if missing:
             return (
                 jsonify(
@@ -351,33 +419,36 @@ def register_routes(app: Flask) -> None:
                 400,
             )
 
-        payload = request.get_json(silent=True) or {}
-        event_type = _normalize_event(payload.get("event_type", "se"))
-        genome = payload.get("genome", "hg19")
-        if event_type not in EVENT_SPECS:
-            return jsonify({"success": False, "error": f"Unsupported event type: {event_type}"}), 400
-
         job_dir = _create_job_dir(Path(app.config["RESULTS_FOLDER"]), prefix="quicktest_")
         job_id = job_dir.name.replace("quicktest_", "")
+
+        input_files: dict[str, str] = {
+            "rmats": str(q["rmats"]),
+        }
+        if analysis_type == "clip":
+            input_files["peak"] = str(q["peak"])
+        else:
+            input_files["known_motifs"] = str(q["known_motifs"])
+            input_files["motifs"] = str(q["motifs"])
+
+        sig_fdr = 0.005 if analysis_type == "clip" and event_type == "a5ss" else 0.05
+        sig_delta_psi = 0.01 if analysis_type == "clip" and event_type == "a5ss" else 0.05
 
         with app.jobs_lock:
             app.jobs[job_id] = {
                 "status": "queued",
+                "analysis_type": analysis_type,
                 "event_type": event_type,
                 "genome": genome,
                 "created": datetime.now(),
-                "input_files": {
-                    "rmats": str(q["rmats"]),
-                    "known_motifs": str(q["known_motifs"]),
-                    "motifs": str(q["motifs"]),
-                },
+                "input_files": input_files,
                 "params": {
                     "window_size": 50,
                     "step_size": 1,
                     "intron_len": 250,
                     "exon_len": 50,
-                    "sig_fdr": 0.05,
-                    "sig_delta_psi": 0.05,
+                    "sig_fdr": sig_fdr,
+                    "sig_delta_psi": sig_delta_psi,
                     "rbp_label": "QuickTest",
                 },
                 "output_dir": str(job_dir),
@@ -385,23 +456,36 @@ def register_routes(app: Flask) -> None:
 
         LOGGER.info("Submitted quick test job %s", job_id)
         app.executor.submit(run_job, job_id)
-        return jsonify({"success": True, "job_id": job_id, "output_dir": str(job_dir)}), 200
+        return jsonify({"success": True, "analysis_type": analysis_type, "job_id": job_id, "output_dir": str(job_dir)}), 200
 
     @app.post("/api/submit")
     def submit_job():
         try:
+            analysis_type = _normalize_analysis_type(request.form.get("analysis_type", "motif"))
             event_type = _normalize_event(request.form.get("event_type", ""))
             genome = request.form.get("genome", "")
             input_type = request.form.get("input_type", "")
-            if not event_type or not genome:
+            if not event_type:
                 return jsonify({"success": False, "error": "Missing required parameters"}), 400
-            if event_type not in EVENT_SPECS:
+            if analysis_type == "motif" and not genome:
+                return jsonify({"success": False, "error": "Missing genome for motif analysis"}), 400
+
+            event_specs = CLIP_EVENT_SPECS if analysis_type == "clip" else EVENT_SPECS
+            if event_type not in event_specs:
                 return jsonify({"success": False, "error": f"Unsupported event type: {event_type}"}), 400
 
             job_dir = _create_job_dir(Path(app.config["RESULTS_FOLDER"]))
             job_id = job_dir.name
 
             input_files: dict[str, str] = {}
+            if analysis_type == "clip":
+                peak = request.files.get("peak_file")
+                if not peak or not peak.filename:
+                    return jsonify({"success": False, "error": "Missing CLIP peak file"}), 400
+                peak_path = job_dir / peak.filename
+                peak.save(peak_path)
+                input_files["peak"] = str(peak_path)
+
             if input_type == "rmats":
                 file = request.files.get("rmats_file")
                 if not file or not file.filename:
@@ -427,34 +511,36 @@ def register_routes(app: Flask) -> None:
             else:
                 return jsonify({"success": False, "error": "Invalid input type"}), 400
 
-            known = request.files.get("known_motifs_file")
-            if not known or not known.filename:
-                return jsonify({"success": False, "error": "Missing known motifs file"}), 400
-            known_path = job_dir / known.filename
-            known.save(known_path)
-            input_files["known_motifs"] = str(known_path)
+            if analysis_type == "motif":
+                known = request.files.get("known_motifs_file")
+                if not known or not known.filename:
+                    return jsonify({"success": False, "error": "Missing known motifs file"}), 400
+                known_path = job_dir / known.filename
+                known.save(known_path)
+                input_files["known_motifs"] = str(known_path)
 
-            custom = request.files.get("motifs_file")
-            if custom and custom.filename:
-                custom_path = job_dir / custom.filename
-                custom.save(custom_path)
-                input_files["motifs"] = str(custom_path)
+                custom = request.files.get("motifs_file")
+                if custom and custom.filename:
+                    custom_path = job_dir / custom.filename
+                    custom.save(custom_path)
+                    input_files["motifs"] = str(custom_path)
 
             params = {
-                "window_size": int(request.form.get("window", 50)),
+                "window_size": int(request.form.get("window", 10 if analysis_type == "clip" else 50)),
                 "step_size": int(request.form.get("step", 1)),
                 "intron_len": int(request.form.get("intron", 250)),
                 "exon_len": int(request.form.get("exon", 50)),
-                "sig_fdr": float(request.form.get("fdr", 0.05)),
-                "sig_delta_psi": float(request.form.get("delta_psi", 0.05)),
+                "sig_fdr": float(request.form.get("fdr", 0.005 if analysis_type == "clip" and event_type == "a5ss" else 0.05)),
+                "sig_delta_psi": float(request.form.get("delta_psi", 0.01 if analysis_type == "clip" and event_type == "a5ss" else 0.05)),
                 "rbp_label": request.form.get("label", "RBP"),
             }
 
             with app.jobs_lock:
                 app.jobs[job_id] = {
                     "status": "queued",
+                    "analysis_type": analysis_type,
                     "event_type": event_type,
-                    "genome": genome,
+                    "genome": genome if analysis_type == "motif" else "NA",
                     "created": datetime.now(),
                     "input_files": input_files,
                     "params": params,
@@ -463,7 +549,7 @@ def register_routes(app: Flask) -> None:
 
             LOGGER.info("Submitted web job %s", job_id)
             app.executor.submit(run_job, job_id)
-            return jsonify({"success": True, "job_id": job_id, "output_dir": str(job_dir)}), 200
+            return jsonify({"success": True, "analysis_type": analysis_type, "job_id": job_id, "output_dir": str(job_dir)}), 200
         except Exception as exc:
             LOGGER.exception("Submit failed")
             return jsonify({"success": False, "error": str(exc)}), 500
@@ -478,6 +564,7 @@ def register_routes(app: Flask) -> None:
                 {
                     "success": True,
                     "status": job["status"],
+                    "analysis_type": job.get("analysis_type", "motif"),
                     "event_type": job["event_type"],
                     "genome": job["genome"],
                     "created": job["created"].isoformat(),
@@ -496,7 +583,13 @@ def register_routes(app: Flask) -> None:
             return jsonify({"success": False, "error": "Job not found"}), 404
 
         output_dir = Path(job["output_dir"])
-        log_file = output_dir / "log.motifMap.txt"
+        analysis_type = _normalize_analysis_type(job.get("analysis_type", "motif"))
+        if analysis_type == "clip":
+            log_file = output_dir / "log.CLIPSeq3.0.0.txt"
+            if not log_file.exists():
+                log_file = output_dir / "log.CLIPSeq3.txt"
+        else:
+            log_file = output_dir / "log.motifMap.txt"
         max_lines = request.args.get("tail", default=120, type=int) or 120
         max_lines = min(max(20, max_lines), 400)
 
@@ -527,6 +620,20 @@ def register_routes(app: Flask) -> None:
             return jsonify({"success": False, "error": "Job not completed"}), 400
 
         output_dir = Path(job["output_dir"])
+        analysis_type = _normalize_analysis_type(job.get("analysis_type", "motif"))
+
+        if analysis_type == "clip":
+            clip_files = []
+            for p in sorted(output_dir.glob("*")):
+                if p.is_file() and p.suffix.lower() in {".txt", ".pdf", ".eps", ".png"}:
+                    clip_files.append(
+                        {
+                            "path": p.name,
+                            "kind": p.suffix.lower().lstrip(".") or "file",
+                        }
+                    )
+            return jsonify({"success": True, "results": clip_files[:50]}), 200
+
         results_file = output_dir / "motif_enrichment_results.txt"
 
         rows: list[dict[str, Any]] = []
@@ -627,7 +734,7 @@ def register_routes(app: Flask) -> None:
                         "folder": str(d),
                         "name": raw,
                         "mtime": datetime.fromtimestamp(d.stat().st_mtime).isoformat(),
-                        "has_log": (d / "log.motifMap.txt").exists(),
+                        "has_log": (d / "log.motifMap.txt").exists() or (d / "log.CLIPSeq3.0.0.txt").exists(),
                     }
                 )
         return jsonify({"success": True, "jobs": jobs}), 200
@@ -636,4 +743,5 @@ def register_routes(app: Flask) -> None:
 if __name__ == "__main__":
     app = create_app()
     app.run(debug=True, host="127.0.0.1", port=5000)
+
 

@@ -195,8 +195,8 @@ def main():
         str(rna_map_script),
         str(exon_path),
         str(peak_file_path),
-        '250',  # intron length
-        '50',   # exon length
+        str(args.intron),
+        str(args.exon),
         str(args.window),
         str(args.step),
         str(args.sigFDR),

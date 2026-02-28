@@ -83,7 +83,7 @@ python cli.py motif-map a3ss \
   --fasta-root genomedata \
   --genome hg19 \
   --output results/motif_a3ss \
-  --rMATS data/test/clip/A3SS/test.rMATS.txt \
+  --rMATS data/test/clip/A3SS/a3ss.rMATS.txt \
   --miso NA --up NA --down NA --background NA
 ```
 
@@ -97,7 +97,7 @@ python cli.py motif-map a5ss \
   --fasta-root genomedata \
   --genome hg19 \
   --output results/motif_a5ss \
-  --rMATS data/test/clip/A5SS/test.rMATS.txt \
+  --rMATS data/test/clip/A5SS/a5ss.rMATS.txt \
   --miso NA --up NA --down NA --background NA
 ```
 
@@ -111,7 +111,7 @@ python cli.py motif-map ri \
   --fasta-root genomedata \
   --genome hg19 \
   --output results/motif_ri \
-  --rMATS data/test/clip/RI/test.rMATS.txt \
+  --rMATS data/test/clip/RI/ri.rMATS.txt \
   --miso NA --up NA --down NA --background NA
 ```
 
@@ -125,7 +125,7 @@ python cli.py motif-map mxe \
   --fasta-root genomedata \
   --genome hg19 \
   --output results/motif_mxe \
-  --rMATS data/test/clip/MXE/test.rMATS.txt \
+  --rMATS data/test/clip/MXE/mxe.rMATS.txt \
   --miso NA --up NA --down NA --background NA
 ```
 
@@ -185,7 +185,7 @@ Use for cassette-exon CLIP enrichment maps.
 python cli.py clip-map se \
   --peak data/test/clip/PIPE-CLIP.Clusters.bed \
   --output results/clip_se \
-  --rMATS data/test/clip/ES/test.rMATS.txt \
+  --rMATS data/test/clip/ES/se.rMATS.txt \
   --miso NA --up NA --down NA --background NA \
   --label PTB \
   --sigFDR 0.05 --sigDeltaPSI 0.05
@@ -198,7 +198,7 @@ Use for alternative acceptor CLIP enrichment maps.
 python cli.py clip-map a3ss \
   --peak data/test/clip/PIPE-CLIP.Clusters.bed \
   --output results/clip_a3ss \
-  --rMATS data/test/clip/A3SS/test.rMATS.txt \
+  --rMATS data/test/clip/A3SS/a3ss.rMATS.txt \
   --miso NA --up NA --down NA --background NA \
   --label RBFOX2 \
   --sigFDR 0.05 --sigDeltaPSI 0.05
@@ -211,7 +211,7 @@ Use for alternative donor CLIP enrichment maps.
 python cli.py clip-map a5ss \
   --peak data/test/clip/PIPE-CLIP.Clusters.bed \
   --output results/clip_a5ss \
-  --rMATS data/test/clip/A5SS/test.rMATS.txt \
+  --rMATS data/test/clip/A5SS/a5ss.rMATS.txt \
   --miso NA --up NA --down NA --background NA \
   --label ESRP \
   --sigFDR 0.005 --sigDeltaPSI 0.01 \
@@ -225,7 +225,7 @@ Use for retained-intron CLIP enrichment maps.
 python cli.py clip-map ri \
   --peak data/test/clip/PIPE-CLIP.Clusters.bed \
   --output results/clip_ri \
-  --rMATS data/test/clip/RI/test.rMATS.txt \
+  --rMATS data/test/clip/RI/ri.rMATS.txt \
   --miso NA --up NA --down NA --background NA \
   --label MBNL1 \
   --sigFDR 0.05 --sigDeltaPSI 0.05
@@ -238,7 +238,7 @@ Use for mutually exclusive exon CLIP enrichment maps.
 python cli.py clip-map mxe \
   --peak data/test/clip/PIPE-CLIP.Clusters.bed \
   --output results/clip_mxe \
-  --rMATS data/test/clip/MXE/test.rMATS.txt \
+  --rMATS data/test/clip/MXE/mxe.rMATS.txt \
   --miso NA --up NA --down NA --background NA \
   --label NOVA1 \
   --sigFDR 0.05 --sigDeltaPSI 0.05
@@ -295,4 +295,5 @@ CLIP-map output typically includes:
 - `*.RNAmap.txt`
 - `*.pdf` / `*.eps`
 - `log.CLIPSeq*.txt`
+
 
