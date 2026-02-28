@@ -2,15 +2,11 @@ use strict;
 
 
 
-##############################################################
 sub parseIsoforms { 
   my($iso) = @_;
   my @wds = split(/\@/, $iso);
   my $numWds = @wds;
 
-#  if($numWds != 11) { 
-#     die("Error in parseIsoforms: 11 fields expected; $numWds encountered\n");
-#  }
   my $longexon = $wds[0];
   my $flankingexon = $wds[1];
 
@@ -25,7 +21,6 @@ sub parseIsoforms {
   my $shortEE   = $wds2[-2];
   
   @wds2 = split(/\:/, $flankingexon);
-#  my $strand = $wds2[3];
   my $flankingES = $wds2[1];
   my $flankingEE   = $wds2[2];
 
@@ -36,10 +31,8 @@ sub parseIsoforms {
                 $flankingES, $flankingEE);
   return(@retArr);
 }
-##############################################################
 
 
-##############################################################
 sub parseAssignedCounts {
    my ($ac) = @_;
 
@@ -68,11 +61,7 @@ sub parseAssignedCounts {
    my @retArr = ($IC, $SC);
    return(@retArr);
 }
-##############################################################
 
-###################
-## MAIN FUNCTION ##
-###################
 my $argc = @ARGV;
 if($argc != 4) { 
    die("USAGE: perl miso2rMATS_v2.pl <bayes cutoff low> <bayes cutoff high> <inFile> <outfile>\n");

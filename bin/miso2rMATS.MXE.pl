@@ -3,15 +3,11 @@ use strict;
 
 
 
-##############################################################
 sub parseIsoforms { 
   my($iso) = @_;
   my @wds = split(/\@/, $iso);
   my $numWds = @wds;
 
-#  if($numWds != 11) { 
-#     die("Error in parseIsoforms: 11 fields expected; $numWds encountered\n");
-#  }
   my $first = $wds[0];
   my $second = $wds[1];
   my $third = $wds[2];
@@ -42,10 +38,8 @@ sub parseIsoforms {
                 $thirdS, $thirdE,$fourthS, $fourthE);
   return(@retArr);
 }
-##############################################################
 
 
-##############################################################
 sub parseAssignedCounts {
    my ($ac) = @_;
 
@@ -74,11 +68,7 @@ sub parseAssignedCounts {
    my @retArr = ($IC, $SC);
    return(@retArr);
 }
-##############################################################
 
-###################
-## MAIN FUNCTION ##
-###################
 my $argc = @ARGV;
 if($argc != 4) { 
    die("USAGE: perl miso2rMATS_v2.pl <bayes cutoff low> <bayes cutoff high> <inFile> <outfile>\n");
