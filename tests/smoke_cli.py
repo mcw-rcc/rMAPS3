@@ -1,5 +1,5 @@
 """
-Lightweight smoke-test helpers for the rmaps_refactored project.
+Lightweight smoke-test helpers for the rMAPS 3 project.
 
 These are not exhaustive tests, but they give you a quick way to
 check that the CLI wiring and pyfaidx-backed genome access work

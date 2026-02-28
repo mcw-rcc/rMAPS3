@@ -1,6 +1,6 @@
 # Web UI Guide
 
-This folder contains the local Flask web interface for running motif-map analyses.
+This folder contains the local Flask web interface for rMAPS 3 motif-map analyses of RBP position-dependent splicing behavior.
 
 ## Start
 

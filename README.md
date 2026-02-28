@@ -1,9 +1,12 @@
-# rMAPS Refactored
+# rMAPS 3
 
-A Python 3 refactor of the original rMAPS motif-mapping pipeline.
+RNA Map Analysis and Plotting Server (rMAPS) generates RNA maps for analysis of RNA-binding protein (RBP) binding sites with position-dependent functions. It supports analysis of binding sites around differential alternative splicing events for known RBPs and can analyze CLIP-seq peaks around differential alternative splicing events to generate RNA maps of CLIP-seq experiments.
+
+This repository provides **rMAPS 3**, a Python 3 modernization of the motif-map pipeline with additional local tooling (CLI + web UI), while preserving core workflow behavior.
 
 ## What This Project Provides
 
+- The original rMAPS motif-map analysis flow, updated for modern Python environments.
 - Python 3 support across legacy motif-map event engines.
 - `pyfaidx`-based genome access (no `pygr` runtime dependency).
 - Unified CLI (`cli.py`) for:
@@ -100,7 +103,7 @@ Detailed command examples are in [`docs/CLI_USAGE.md`](docs/CLI_USAGE.md).
 
 ## Web UI (Local)
 
-Run the local web server:
+Run the local web UI:
 
 ```bash
 python run_web.py
