@@ -8,8 +8,8 @@ import multiprocessing
 import pickle
 import types
 
-import drawutils
-from genome_access import load_genome, fetch_seq as fetch_seq_from_fasta
+from rmaps_core import drawutils
+from rmaps_core.genome_access import load_genome, fetch_seq as fetch_seq_from_fasta
 
 def run_command(cmd):
     completed = subprocess.run(cmd, capture_output=True, text=True)
@@ -1449,3 +1449,4 @@ def main():
 if __name__ == "__main__":
     multiprocessing.freeze_support()
     main()
+

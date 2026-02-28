@@ -3,6 +3,7 @@ from __future__ import annotations
 import logging
 import math
 import os
+import sys
 import uuid
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
@@ -12,12 +13,14 @@ from typing import Any
 
 from flask import Flask, jsonify, render_template, request
 
-from motif_map_core import EVENT_SPECS, run_motif_map
-
+try:
+    from rmaps_core.motif_map_core import EVENT_SPECS, run_motif_map
+except ModuleNotFoundError:
+    # Allow running `python webui/app.py` directly.
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+    from rmaps_core.motif_map_core import EVENT_SPECS, run_motif_map
 
 LOGGER = logging.getLogger(__name__)
-
-
 SUPPORTED_GENOMES = {
     "hg38": {"organism": "Homo sapiens", "default": True},
     "hg19": {"organism": "Homo sapiens", "default": False},

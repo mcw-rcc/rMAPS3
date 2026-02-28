@@ -10,7 +10,7 @@ import os
 
 
 PYTHON = sys.executable
-REPO_ROOT = Path(__file__).resolve().parent
+REPO_ROOT = Path(__file__).resolve().parents[1]
 
 
 @dataclass(frozen=True)

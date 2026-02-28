@@ -10,6 +10,7 @@ A Python 3 refactor of the original rMAPS motif-mapping pipeline.
   - motif-map generation (`se`, `a3ss`, `a5ss`, `ri`, `mxe`)
   - MISO-to-rMATS conversion
   - exon-set generation
+- Local Web UI (`run_web.py` / `webui/`) for browser-driven runs.
 
 ## Requirements
 
@@ -24,6 +25,14 @@ Install dependencies:
 ```bash
 pip install -r requirements.txt
 ```
+
+## Documentation
+
+- Installation: [`docs/INSTALL.md`](docs/INSTALL.md)
+- Quick start: [`docs/QUICKSTART.md`](docs/QUICKSTART.md)
+- CLI reference: [`docs/CLI_USAGE.md`](docs/CLI_USAGE.md)
+- Web UI usage and API: [`webui/README.md`](webui/README.md)
+- Test scripts and matrix: [`tests/README.md`](tests/README.md)
 
 ## Genome Data Layout
 
@@ -42,23 +51,49 @@ Important:
 - Build name and FASTA name must match (`<build>/<build>.fa`).
 - If you run with `--genome hg19`, the loader uses `genomedata/hg19/hg19.fa`.
 
-For reproducible genome setup (download scripts + SHA256 manifest), see [`INSTALL.md`](INSTALL.md).
+For reproducible genome setup (download scripts + SHA256 manifest), see [`docs/INSTALL.md`](docs/INSTALL.md).
 
 ## Project Structure
 
-- `cli.py`: primary user entrypoint
-- `motif_map_core.py`: centralized routing/execution for event workflows and converters
-- `genome_access.py`: shared `pyfaidx` sequence fetch layer
-- `drawutils.py`: plotting/export helpers
+- `cli.py`: primary CLI entrypoint
+- `run_web.py`: local web launcher entrypoint
+- `rmaps_core/`: core importable modules
 - `legacy/`: event-specific motif scripts (`motifMap*_MP.py`)
 - `bin/`: converter/util scripts
+- `docs/`: installation, quickstart, and CLI docs
 - `tests/`: smoke and integration test runners
+- `webui/`: Flask app, static assets, and templates
 
 ## CLI Usage
 
-CLI reference is documented in:
+Top-level help:
 
-- [`CLI_USAGE.md`](CLI_USAGE.md)
+```bash
+python cli.py --help
+```
+
+Motif-map help:
+
+```bash
+python cli.py motif-map --help
+python cli.py motif-map se --help
+```
+
+Converters:
+
+```bash
+python cli.py convert --help
+python cli.py convert miso --help
+```
+
+Exon sets:
+
+```bash
+python cli.py exon-sets --help
+python cli.py exon-sets se --help
+```
+
+Detailed command examples are in [`docs/CLI_USAGE.md`](docs/CLI_USAGE.md).
 
 ## Web UI (Local)
 
@@ -72,9 +107,7 @@ Open:
 
 - `http://127.0.0.1:5000`
 
-Full Web UI documentation is in:
-
-- [`webui/README.md`](webui/README.md)
+See full Web UI documentation in [`webui/README.md`](webui/README.md).
 
 ## Outputs
 
@@ -88,8 +121,7 @@ Each run writes to the given `--output` directory:
 
 ## Testing
 
-Detailed test documentation and commands are in:
-- [`tests/README.md`](tests/README.md)
+Detailed test documentation and commands are in [`tests/README.md`](tests/README.md).
 
 Quick smoke:
 
@@ -105,18 +137,11 @@ bash tests/run_all_events.sh
 
 Note: shell test runners under `tests/` require a Bash-compatible environment (Linux/macOS, WSL, or Git Bash on Windows).
 
-## Documentation
-
-- Installation: [`INSTALL.md`](INSTALL.md)
-- Quick start: [`QUICKSTART.md`](QUICKSTART.md)
-- CLI reference: [`CLI_USAGE.md`](CLI_USAGE.md)
-- Web UI usage and API: [`webui/README.md`](webui/README.md)
-- Test scripts and matrix: [`tests/README.md`](tests/README.md)
-
 ## Operational Notes
 
 - Use the CLI (`cli.py`) as the public interface.
-- For local browser-based runs, use `run_web.py`.
+- For browser-based runs, use `run_web.py`.
+- Core modules are under `rmaps_core/`.
 - Scripts under `legacy/` are internal implementation details; use the CLI for production runs.
 - `--fasta-root` is the canonical argument; `--fastaRoot` is accepted for compatibility.
 
@@ -127,3 +152,6 @@ Note: shell test runners under `tests/` require a Bash-compatible environment (L
 - MISO conversion fails:
   - Ensure Perl is installed and available in `PATH`.
   - Verify `bin/miso2rMATS.*.pl` scripts exist.
+- PNG files missing:
+  - Native Ghostscript export may be unavailable.
+  - Install optional rendering dependencies from `requirements.txt`.

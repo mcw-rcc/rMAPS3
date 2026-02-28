@@ -1,11 +1,9 @@
 import sys
-import subprocess
 from pathlib import Path
-from typing import Optional
 
 import typer
 
-from motif_map_core import event_script, miso_converter_script, run_subprocess, run_motif_map
+from rmaps_core.motif_map_core import miso_converter_script, run_subprocess, run_motif_map
 
 
 app = typer.Typer(help="RNA motif maps and exon set utilities")

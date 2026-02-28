@@ -28,6 +28,14 @@ Open:
 - Recent jobs dropdown
 - Browser history support (`back`/`forward`) for job views
 
+## One-Click Test Genome Behavior
+
+- Quick test uses the genome selected in the UI genome dropdown.
+- If no genome is provided by the client, the server default is `hg19`.
+- Required FASTA layout for the selected genome is:
+  - `genomedata/<build>/<build>.fa`
+  - Example for default: `genomedata/hg19/hg19.fa`
+
 ## Environment Variables
 
 - `RMAPS_FASTA_ROOT`:
@@ -86,4 +94,3 @@ results/<job_id>/           or results/quicktest_<job_id>/
   - Hard refresh browser after JS updates (`Ctrl+F5`).
 - MISO run fails:
   - Ensure Perl is available in the server process `PATH`.
-

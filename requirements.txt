@@ -6,4 +6,5 @@ scipy
 pyx
 pypdfium2
 Pillow
+flask
 
