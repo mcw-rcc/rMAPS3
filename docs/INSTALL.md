@@ -28,6 +28,11 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
+Optional system dependencies (not installed via `pip`):
+
+- MiKTeX or TeX Live: improves PyX text rendering in motif-map outputs
+- Ghostscript: enables native PNG export path
+
 ## 3. Prepare Genome FASTA Data
 
 Layout must be:

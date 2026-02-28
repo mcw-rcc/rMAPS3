@@ -21,6 +21,7 @@ Original rMAPS website: http://rmaps.cecsresearch.org/
 - OS: Linux/macOS/Windows
 - Perl available on `PATH` for MISO conversion (`miso2rMATS*.pl`)
 - Flask for Web UI (`run_web.py`)
+- Optional MiKTeX/TeX Live for native PyX text rendering
 - Optional Ghostscript for native PNG export (not required with Python fallback)
 
 Install dependencies:
