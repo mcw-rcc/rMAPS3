@@ -25,7 +25,7 @@ source .venv/bin/activate
 ## 2. Install Dependencies
 
 ```bash
-pip install -r requirements.txt
+python -m pip install -r requirements.txt
 ```
 
 Optional system dependencies (not installed via `pip`):
