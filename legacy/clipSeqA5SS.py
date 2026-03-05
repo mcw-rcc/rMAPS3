@@ -205,7 +205,8 @@ def main():
         str(nu),
         str(nd),
         str(nb),
-        str(int(args.separate))
+        str(int(args.separate)),
+        'A5SS'
     ]
     
     logging.debug("Running RNA map with command: %s", ' '.join(cmd))

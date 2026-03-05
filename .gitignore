@@ -82,3 +82,9 @@ Thumbs.db
 instance/
 job_history.db
 *.bak
+
+# Test outputs
+/outputs/
+
+# Test scripts
+test_all_motifmap_events.py

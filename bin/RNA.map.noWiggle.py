@@ -8,18 +8,21 @@ from math import ceil
 from pyx import *
 ## for making plot
 from scipy import stats
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'rmaps_core'))
+from drawutils import export_canvas_outputs
 #import fisher,mne;  ## for FDR calculation
 #
 #
 ### checking out the number of arguments
-if (len(sys.argv) < 10):
+if (len(sys.argv) < 14):
     print('Not enough arguments!!')
-    print('It takes at least 9 arguments.')
+    print('It takes at least 13 arguments plus event type.')
     print(
-        'Usage:\n\tProgramName exonPath peakCallerOutput intronLength exonLength windowSize stepSize FDR_cutoff proteinName outputFolder'
+        'Usage:\n\tProgramName exonPath peakCallerOutput intronLength exonLength windowSize stepSize FDR_cutoff proteinName outputFolder nu nd nb separate eventType'
     )
     print(
-        'Example\n\tProgramName /exon/folder PIPE-CLIP.Clusters.bed 250 50 10 5 0.05 PTB RNA_map.PTB'
+        'Example\n\tProgramName /exon/folder PIPE-CLIP.Clusters.bed 250 50 10 5 0.05 PTB . 10 10 10 0 SE'
     )
     sys.exit()
 
@@ -66,6 +69,7 @@ nu = int(sys.argv[10])
 nd = int(sys.argv[11])
 nb = int(sys.argv[12])
 separate = int(sys.argv[13])
+event_type = sys.argv[14].upper() if len(sys.argv) > 14 else 'SE'
 #
 ## OUTPUT, create an output folder
 #outDir = sys.argv[9];
@@ -1246,12 +1250,23 @@ def drawMap(
                    intronWidth, dividerGap, slopeGap, Scale, wL, sL,
                    negPvalPoints, maxNegPval, separate)
 
-    canv.writePDFfile(outPath + '/A5SS.RNA.map.pdf')
-    ## write to PDF
-    canv.writeGSfile(outPath + '/jj.png', "png16m", resolution=100)
-    os.rename(outPath + '/jj.png', outPath + '/' + 'A5SS.RNA.map.png')
+    pdf_path = outPath + '/' + event_type + '.RNA.map.pdf'
+    png_path = outPath + '/' + event_type + '.RNA.map.png'
+    pdf_ok, png_ok = export_canvas_outputs(
+        canv,
+        pdf_path,
+        png_path,
+        png_resolution=100,
+        logger=logging
+    )
+    if pdf_ok:
+        logging.debug("PDF export successful: %s", pdf_path)
+    if png_ok:
+        logging.debug("PNG export successful: %s", png_path)
+    if not pdf_ok and not png_ok:
+        logging.warning("Neither PDF nor PNG export succeeded for RNA map")
     logging.debug(
-        "Done drawing RNA map. Please find RNA.map.pdf file in the output folder."
+        "Done drawing RNA map. Please find RNA.map output in the output folder."
     )
 
 
