@@ -18,7 +18,7 @@ from datetime import datetime
 CLIP_EVENTS = {
     "se": {
         "name": "Skipped Exon (SE)",
-        "rMATS": "data/test/clip/ES/se.rMATS.txt",
+        "rMATS": "data/test/clip/SE/se.rMATS.txt",
         "peak": "data/test/clip/PIPE-CLIP.Clusters.bed",
         "output": "results/test_clip_se",
     },
