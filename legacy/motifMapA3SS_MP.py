@@ -26,6 +26,24 @@ def copy_file(src, dst):
         return 1, str(exc)
 
 
+def _safe_float(value):
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def _mean_psi_field(field):
+    values = []
+    for token in field.replace('"', '').split(','):
+        val = _safe_float(token)
+        if val is not None:
+            values.append(val)
+    if not values:
+        return None
+    return sum(values) / float(len(values))
+
+
 def setup_runtime():
     parser = argparse.ArgumentParser(
         description=
@@ -305,44 +323,33 @@ def makeInputFiles(
     bFile.write(header + '\n')
 
     line = rFile.readline()
+    fallback_bg = []
     for line in rFile:  ## process each line
 
         ele = line.strip().split('\t')
+        if len(ele) < 11:
+            continue
         key = ':'.join(ele[3:7])
         value = [1, '\t'.join(ele[3:11])]
-        fdr = float(ele[-4])
-        if fdr < sigFDR:  ## it could be significant
-            deltaPSI = float(ele[-1])
+        fdr = _safe_float(ele[-4])
+        deltaPSI = _safe_float(ele[-1])
+        if fdr is None:
+            continue
+        if fdr < sigFDR and deltaPSI is not None:  ## it could be significant
             if deltaPSI >= sigDeltaPSI:  ## it's upregulated. high in sample 1
                 u[key] = value
             elif deltaPSI <= -sigDeltaPSI:  ## it's downregulated. high in sample 2
                 d[key] = value
         elif fdr > bgFDR:  ## it could be background
-            psi = ele[-3].replace('"', '').split(',')
-            t = 0
-            sum = 0.0
-            PSI_1 = 0.0
-            for p in psi:  ##
-                if p != "NA":  ## number here
-                    t += 1
-                    sum += float(p)
-            if t > 0:
-                PSI_1 = sum / t
+            PSI_1 = _mean_psi_field(ele[-3])
+            PSI_2 = _mean_psi_field(ele[-2])
 
-            psi = ele[-2].replace('"', '').split(',')
-            t = 0
-            sum = 0.0
-            PSI_2 = 0.0
-            for p in psi:  ##
-                if p != "NA":  ## number here
-                    t += 1
-                    sum += float(p)
-            if t > 0:
-                PSI_2 = sum / t
-
-            if min(PSI_1, PSI_2) < minPSI and max(
+            if PSI_1 is not None and PSI_2 is not None and min(PSI_1, PSI_2) < minPSI and max(
                     PSI_1, PSI_2) > maxPSI:  ## it is a background event
                 b[key] = value
+
+        if deltaPSI is not None and fdr >= sigFDR:
+            fallback_bg.append((abs(deltaPSI), -fdr, key, value))
 
     logging.debug(
         "Done populating initial dictionaries with possible duplicates")
@@ -375,6 +382,20 @@ def makeInputFiles(
         if d[key][0] == 1:  ## it is unique
             nd += 1
             dFile.write(d[key][1] + '\n')
+
+    if len(b) == 0 and fallback_bg:
+        logging.debug("No strict background events found; building fallback background from non-significant events")
+        fallback_bg.sort()
+        target_bg = max(200, int((max(nu, 1) + max(nd, 1)) / 4))
+        added = 0
+        for _, _, key, value in fallback_bg:
+            if key in u or key in d or key in b:
+                continue
+            b[key] = [1, value[1]]
+            added += 1
+            if added >= target_bg:
+                break
+
     for key in b:
         if b[key][0] == 1:  ## it is unique
             nb += 1
@@ -1061,6 +1082,9 @@ def plotMotifs(
     negPvalPoints = []
     maxPointValue = 0.0000000000000000000000000000000000000000001
     maxNegPval = 0.000000000000000000000000000000000000000001
+    up_den = float(max(1, uNum * len(motifs)))
+    dn_den = float(max(1, dNum * len(motifs)))
+    bg_den = float(max(1, bNum * len(motifs)))
     for zz in range(8):  ## for 8 regions
         drawPoints.append([])
         negPvalPoints.append([])
@@ -1068,12 +1092,9 @@ def plotMotifs(
                 len(upc[zz])
         ):  ## everything has the same items. It's okay to use this.
             drawPoints[zz].append([
-                min(1.0,
-                    float(upc[zz][ind]) / float(uNum * len(motifs))),
-                min(1.0,
-                    float(dnc[zz][ind]) / float(dNum * len(motifs))),
-                min(1.0,
-                    float(bgc[zz][ind]) / float(bNum * len(motifs)))
+                min(1.0, float(upc[zz][ind]) / up_den),
+                min(1.0, float(dnc[zz][ind]) / dn_den),
+                min(1.0, float(bgc[zz][ind]) / bg_den)
             ])
             negPvalPoints[zz].append([
                 -numpy.log10(pdic_up[zz][ind]), -numpy.log10(pdic_dn[zz][ind])
