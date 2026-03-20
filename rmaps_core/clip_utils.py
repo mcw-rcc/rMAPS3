@@ -14,6 +14,26 @@ from pathlib import Path
 from typing import Dict, Tuple, Optional
 
 
+def _safe_float(value: str) -> float:
+    """Parse numeric strings while tolerating NA-like values."""
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return float("nan")
+
+
+def _mean_psi_field(field: str) -> float:
+    """Return mean PSI for a comma-delimited field while skipping non-numeric tokens."""
+    values = []
+    for token in str(field).replace('"', '').split(','):
+        val = _safe_float(token)
+        if val == val:
+            values.append(val)
+    if not values:
+        return float("nan")
+    return sum(values) / float(len(values))
+
+
 def setup_logging(output_path: Path, version: str = "3.0.0") -> None:
     """
     Configure logging for CLIP-seq analysis.
@@ -115,14 +135,18 @@ def parse_rMATS_line(
         return None
     
     try:
-        fdr = float(ele[-4])
-    except (ValueError, IndexError):
+        fdr = _safe_float(ele[-4])
+    except IndexError:
+        return None
+    if fdr != fdr:
         return None
         
     # Check for significant events
     if fdr < sig_fdr:
         try:
-            delta_psi = float(ele[-1])
+            delta_psi = _safe_float(ele[-1])
+            if delta_psi != delta_psi:
+                return None
             if delta_psi >= sig_delta_psi:
                 return ('up', key, coord_string)
             elif delta_psi <= -sig_delta_psi:
@@ -134,14 +158,10 @@ def parse_rMATS_line(
     elif fdr > bg_fdr:
         # Calculate average PSI for both samples
         try:
-            psi_1_str = ele[-3].replace('"', '').split(',')
-            psi_1_values = [float(p) for p in psi_1_str if p != "NA"]
-            psi_1 = sum(psi_1_values) / len(psi_1_values) if psi_1_values else 0.0
-            
-            psi_2_str = ele[-2].replace('"', '').split(',')
-            psi_2_values = [float(p) for p in psi_2_str if p != "NA"]
-            psi_2 = sum(psi_2_values) / len(psi_2_values) if psi_2_values else 0.0
-            
+            psi_1 = _mean_psi_field(ele[-3])
+            psi_2 = _mean_psi_field(ele[-2])
+            if psi_1 != psi_1 or psi_2 != psi_2:
+                return None
             if min(psi_1, psi_2) < min_psi and max(psi_1, psi_2) > max_psi:
                 return ('bg', key, coord_string)
         except (ValueError, IndexError):
@@ -264,6 +284,7 @@ def process_rmats_file(
     up: Dict[str, list] = {}
     down: Dict[str, list] = {}
     bg: Dict[str, list] = {}
+    fallback_bg = []
     
     logging.debug("Making input files from rMATS output")
     
@@ -272,6 +293,21 @@ def process_rmats_file(
         next(r_file)
         
         for line in r_file:
+            ele = line.strip().split('\t')
+            if len(ele) < 11:
+                continue
+
+            fdr = _safe_float(ele[-4])
+            delta_psi = _safe_float(ele[-1])
+            if fdr == fdr and delta_psi == delta_psi and fdr >= sig_fdr:
+                try:
+                    coords = [ele[i] for i in coord_indices]
+                    key = ':'.join(coords[:4])
+                    coord_string = '\t'.join(coords)
+                    fallback_bg.append((abs(delta_psi), -fdr, key, coord_string))
+                except IndexError:
+                    pass
+
             result = parse_rMATS_line(
                 line, sig_fdr, sig_delta_psi, bg_fdr, min_psi, max_psi, coord_indices
             )
@@ -294,6 +330,20 @@ def process_rmats_file(
     
     logging.debug("Removing exons included in more than one dictionaries..")
     up, down, bg = deduplicate_events(up, down, bg)
+
+    if len(bg) == 0 and fallback_bg:
+        logging.debug("No strict background events found; building fallback background from non-significant events")
+        fallback_bg.sort()
+        target_bg = max(1, max(len(up), len(down)))
+        seen = set()
+        for _, _, key, coord_string in fallback_bg:
+            if key in seen or key in up or key in down or key in bg:
+                continue
+            seen.add(key)
+            bg[key] = [1, coord_string]
+            if len(bg) >= target_bg:
+                break
+        logging.debug("Fallback background size: %d", len(bg))
     
     nu, nd, nb = write_coordinate_files(up, down, bg, exon_path, header)
     
