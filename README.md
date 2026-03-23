@@ -125,13 +125,6 @@ python run_web.py
 
 Open `http://127.0.0.1:5000`.
 
-## Operational Notes
-
-- Use `cli.py` as the stable public interface.
-- `legacy/` scripts are implementation engines.
-- `--fasta-root` is canonical; `--fastaRoot` is accepted for compatibility.
-- Python test suites in `tests/` are the maintained validation path; shell scripts in `tests/legacy/` are compatibility-only.
-
 ## Troubleshooting
 
 - `FastaNotFoundError`: verify `--genome` and `--fasta-root` match `<build>/<build>.fa`.
