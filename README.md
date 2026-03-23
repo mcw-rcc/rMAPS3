@@ -20,25 +20,25 @@ Original rMAPS website: http://rmaps.cecsresearch.org/
 
 Motif mode (collapsed optional parameters):
 
-![Web UI Motif Map](docs/WEBUI_MotifMap.png)
+![Web UI Motif Map](docs/images/WEBUI_MotifMap.png)
 
 CLIP mode (collapsed optional parameters):
 
-![Web UI CLIP-seq](docs/WEBUI_ClipSeq.png)
+![Web UI CLIP-seq](docs/images/WEBUI_ClipSeq.png)
 
 Optional analysis parameters (expanded):
 
-![Web UI Optional Parameters Expanded](docs/WEBUI_OPTIONAL.png)
+![Web UI Optional Parameters Expanded](docs/images/WEBUI_OPTIONAL.png)
 
 ### CLI
 
 Global help:
 
-![CLI Global Help](docs/CLI_HELP.png)
+![CLI Global Help](docs/images/CLI_HELP.png)
 
 Motif event-specific help:
 
-![CLI Motif Map SE Help](docs/CLI_SE.png)
+![CLI Motif Map SE Help](docs/images/CLI_SE.png)
 
 ## Requirements
 
