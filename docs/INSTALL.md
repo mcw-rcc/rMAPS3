@@ -35,26 +35,41 @@ Optional system dependencies (not installed via `pip`):
 
 ## 3. Prepare Genome FASTA Data
 
-Layout must be:
+Genomes are **not** included in the repository (files are ~3GB each). Download them using the provided scripts:
 
-```text
-genomedata/
-  <build>/<build>.fa
+**Windows (PowerShell):**
+
+```powershell
+# Download hg19 and hg38
+.\scripts\fetch_genomes.ps1 -Genomes hg19,hg38
+
+# Or all available genomes
+.\scripts\fetch_genomes.ps1 -Genomes all
+
+# Dry run to see what would download
+.\scripts\fetch_genomes.ps1 -Genomes hg19 -DryRun
 ```
 
-Examples:
+**Linux/macOS:**
 
-```text
-genomedata/hg19/hg19.fa
-genomedata/hg38/hg38.fa
-genomedata/mm10/mm10.fa
+```bash
+# Download hg19 and hg38
+./scripts/fetch_genomes.sh --genomes hg19,hg38
+
+# Or all available genomes
+./scripts/fetch_genomes.sh --genomes all
+
+# Dry run to see what would download
+./scripts/fetch_genomes.sh --genomes hg19 --dry-run
 ```
 
-Download and verify genomes using project scripts:
+The script:
+- Downloads from UCSC/Ensembl sources
+- Verifies SHA256 checksums automatically
+- Decompresses `.fa.gz` → `.fa`
+- Creates `genomedata/<build>/<build>.fa` structure
 
-- Windows: `scripts/fetch_genomes.ps1`
-- Linux/macOS: `scripts/fetch_genomes.sh`
-- Manifest (source URL + SHA256): `scripts/genomes.manifest.tsv`
+**Available genomes:** hg19, hg38, mm10, dm3, dm6, and others (see `scripts/genomes.manifest.tsv`)
 
 ## 4. Verify Installation
 

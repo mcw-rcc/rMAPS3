@@ -34,9 +34,22 @@ python -m pip install -r requirements.txt
 
 ## Genome Data Layout
 
-Pass `--fasta-root` (or legacy alias `--fastaRoot`) to a directory that contains `<build>/<build>.fa`.
-Examples: `genomedata/hg19/hg19.fa`, `genomedata/hg38/hg38.fa`, `genomedata/mm10/mm10.fa`.
-For setup and verification steps, see [`docs/INSTALL.md`](docs/INSTALL.md).
+Genome FASTA files must be downloaded separately (not included in repo).
+
+Use provided fetch scripts:
+- **Windows:** `.\scripts\fetch_genomes.ps1 -Genomes hg19,hg38`
+- **Linux/macOS:** `./scripts/fetch_genomes.sh --genomes hg19,hg38`
+
+Expected layout after download:
+```text
+genomedata/
+  hg19/hg19.fa
+  hg38/hg38.fa
+  mm10/mm10.fa
+  ...
+```
+
+For full setup instructions, see [Installation Guide](docs/INSTALL.md).
 
 ## Project Structure
 
