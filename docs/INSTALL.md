@@ -35,41 +35,64 @@ Optional system dependencies (not installed via `pip`):
 
 ## 3. Prepare Genome FASTA Data
 
-Genomes are **not** included in the repository (files are ~3GB each). Download them using the provided scripts:
+Layout must be:
+
+```text
+genomedata/
+  <build>/<build>.fa
+```
+
+Examples:
+
+```text
+genomedata/hg19/hg19.fa
+genomedata/hg38/hg38.fa
+genomedata/mm10/mm10.fa
+```
+
+### Download genomes using fetch scripts
 
 **Windows (PowerShell):**
 
 ```powershell
-# Download hg19 and hg38
+# Download specific genomes
 .\scripts\fetch_genomes.ps1 -Genomes hg19,hg38
 
-# Or all available genomes
+# Or download all available genomes
 .\scripts\fetch_genomes.ps1 -Genomes all
 
-# Dry run to see what would download
+# Preview what would download without actually downloading
 .\scripts\fetch_genomes.ps1 -Genomes hg19 -DryRun
+
+# Force re-download if already exists
+.\scripts\fetch_genomes.ps1 -Genomes hg19 -Force
 ```
 
 **Linux/macOS:**
 
 ```bash
-# Download hg19 and hg38
+# Download specific genomes
 ./scripts/fetch_genomes.sh --genomes hg19,hg38
 
-# Or all available genomes
+# Or download all available genomes
 ./scripts/fetch_genomes.sh --genomes all
 
-# Dry run to see what would download
+# Preview what would download
 ./scripts/fetch_genomes.sh --genomes hg19 --dry-run
+
+# Force re-download if already exists
+./scripts/fetch_genomes.sh --genomes hg19 --force
 ```
 
-The script:
-- Downloads from UCSC/Ensembl sources
-- Verifies SHA256 checksums automatically
+The script automatically:
+- Downloads from UCSC/Ensembl reference sources
+- Verifies SHA256 checksums
 - Decompresses `.fa.gz` → `.fa`
-- Creates `genomedata/<build>/<build>.fa` structure
+- Creates `<build>/<build>.fa` structure
 
-**Available genomes:** hg19, hg38, mm10, dm3, dm6, and others (see `scripts/genomes.manifest.tsv`)
+Available genomes: `hg19`, `hg38`, `mm10`, `dm3`, `dm6`, `rn6`, `galGal5`, `galGal6`, `danRer10`, `danRer11`, `ce11`, `xenLae2`, `xenTro7`, `xenTro9`, `bosTau9`, `susScr11`, `araTha1`, `oSa7`
+
+For complete list with URLs and verification hashes, see `scripts/genomes.manifest.tsv`
 
 ## 4. Verify Installation
 

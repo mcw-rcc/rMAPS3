@@ -40,6 +40,8 @@ Use provided fetch scripts:
 - **Windows:** `.\scripts\fetch_genomes.ps1 -Genomes hg19,hg38`
 - **Linux/macOS:** `./scripts/fetch_genomes.sh --genomes hg19,hg38`
 
+By default, files download to `genomedata/`. To use a different location, pass `--FastaRoot` (Windows) or `--fasta-root` (Linux/macOS) to the script, or set `$env:RMAPS_FASTA_ROOT` / `RMAPS_FASTA_ROOT` environment variable.
+
 Expected layout after download:
 ```text
 genomedata/

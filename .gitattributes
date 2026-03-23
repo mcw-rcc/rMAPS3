@@ -1,2 +1,1 @@
-# No LFS configuration. 
-# All data files are included directly in the repository.
+data/test/clip/PIPE-CLIP.Clusters.bed filter=lfs diff=lfs merge=lfs -text
