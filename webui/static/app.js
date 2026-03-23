@@ -7,6 +7,7 @@ const analysisTypeInput = document.getElementById("analysisType");
 const modeMotifBtn = document.getElementById("modeMotifBtn");
 const modeClipBtn = document.getElementById("modeClipBtn");
 const modeSubtitle = document.getElementById("modeSubtitle");
+const themeToggleBtn = document.getElementById("themeToggleBtn");
 const submitBtn = document.getElementById("submitBtn");
 const quickTestBtn = document.getElementById("quickTestBtn");
 const loadJobBtn = document.getElementById("loadJobBtn");
@@ -36,8 +37,10 @@ let currentJobAnalysisType = "motif";
 let suppressHistoryPush = false;
 let loadJobInFlight = false;
 let currentAnalysisType = "motif";
+const THEME_STORAGE_KEY = "rmapsTheme";
 
 document.addEventListener("DOMContentLoaded", () => {
+  initTheme();
   loadGenomes();
   loadRecentJobs();
   setupEventListeners();
@@ -106,6 +109,8 @@ async function loadGenomes() {
 }
 
 function setupEventListeners() {
+  setupThemeToggle();
+
   if (modeMotifBtn) {
     modeMotifBtn.addEventListener("click", () => setAnalysisMode("motif"));
   }
@@ -144,6 +149,39 @@ function setupEventListeners() {
   setupCollapsibleParams();
   
   setAnalysisMode(currentAnalysisType);
+}
+
+function initTheme() {
+  try {
+    const savedTheme = localStorage.getItem(THEME_STORAGE_KEY);
+    const initialTheme = savedTheme === "light" || savedTheme === "dark" ? savedTheme : "dark";
+    applyTheme(initialTheme);
+  } catch (error) {
+    applyTheme("dark");
+  }
+}
+
+function setupThemeToggle() {
+  if (!themeToggleBtn) return;
+
+  themeToggleBtn.addEventListener("click", () => {
+    const currentTheme = document.body.getAttribute("data-theme") || "dark";
+    const nextTheme = currentTheme === "dark" ? "light" : "dark";
+    applyTheme(nextTheme);
+    try {
+      localStorage.setItem(THEME_STORAGE_KEY, nextTheme);
+    } catch (error) {
+      console.error("Unable to persist theme preference:", error);
+    }
+  });
+}
+
+function applyTheme(theme) {
+  const appliedTheme = theme === "light" ? "light" : "dark";
+  document.body.setAttribute("data-theme", appliedTheme);
+  if (themeToggleBtn) {
+    themeToggleBtn.textContent = appliedTheme === "dark" ? "Light Mode" : "Dark Mode";
+  }
 }
 
 function setAnalysisMode(mode) {

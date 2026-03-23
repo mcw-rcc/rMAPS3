@@ -1,11 +1,35 @@
 :root {
   --primary: #0066cc;
   --primary-dark: #0052a3;
+  --bg: #171b20;
+  --text: #e8edf3;
+  --surface: #1c222a;
+  --surface-alt: #141a21;
+  --light: #121820;
+  --border: #2b3848;
+  --shadow: 0 8px 20px rgba(0, 0, 0, 0.28);
+  --input-bg: #111820;
+  --muted: #c8d2de;
+  --secondary-bg: #0f3b6b;
+  --secondary-text: #cde6ff;
+  --secondary-border: #265d95;
+  --success: #28a745;
+  --danger: #dc3545;
+}
+
+body[data-theme="light"] {
+  --bg: #f5f5f5;
+  --text: #333;
+  --surface: #fff;
+  --surface-alt: #f8f9fa;
   --light: #f8f9fa;
   --border: #ddd;
   --shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  --success: #28a745;
-  --danger: #dc3545;
+  --input-bg: #fff;
+  --muted: #222;
+  --secondary-bg: #eef5ff;
+  --secondary-text: #0b4b99;
+  --secondary-border: #b8d4f5;
 }
 
 * {
@@ -16,8 +40,8 @@
 
 body {
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-  background-color: #f5f5f5;
-  color: #333;
+  background-color: var(--bg);
+  color: var(--text);
   line-height: 1.6;
 }
 
@@ -41,6 +65,25 @@ body {
   font-size: 28px;
 }
 
+.header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.theme-toggle-btn {
+  background-color: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  padding: 8px 12px;
+  border-radius: 6px;
+}
+
+.theme-toggle-btn:hover {
+  background-color: rgba(255, 255, 255, 0.24);
+}
+
 .mode-toggle {
   display: flex;
   gap: 10px;
@@ -48,9 +91,9 @@ body {
 }
 
 .mode-btn {
-  border: 1px solid #b8d4f5;
-  background-color: #eef5ff;
-  color: #0b4b99;
+  border: 1px solid var(--secondary-border);
+  background-color: var(--secondary-bg);
+  color: var(--secondary-text);
 }
 
 .mode-btn.active {
@@ -60,7 +103,7 @@ body {
 }
 
 form {
-  background: #fff;
+  background: var(--surface);
   padding: 24px;
   border-radius: 8px;
   box-shadow: var(--shadow);
@@ -72,7 +115,7 @@ fieldset {
   padding: 16px;
   border: 1px solid var(--border);
   border-radius: 4px;
-  background-color: var(--light);
+  background-color: var(--surface-alt);
 }
 
 legend {
@@ -89,6 +132,7 @@ label {
   display: block;
   margin-bottom: 5px;
   font-weight: 500;
+  color: var(--muted);
 }
 
 input[type="text"],
@@ -100,7 +144,8 @@ select {
   border: 1px solid var(--border);
   border-radius: 4px;
   font-size: 14px;
-  background-color: #fff;
+  background-color: var(--input-bg);
+  color: var(--text);
 }
 
 .radio-group {
@@ -118,7 +163,7 @@ select {
 .input-section {
   margin-top: 12px;
   padding: 12px;
-  background-color: #fff;
+  background-color: var(--surface);
   border-radius: 4px;
   border-left: 4px solid var(--primary);
 }
@@ -155,18 +200,19 @@ button[type="submit"]:disabled {
 }
 
 button[type="reset"] {
-  background-color: var(--light);
+  background-color: var(--surface-alt);
+  color: var(--text);
   border: 1px solid var(--border);
 }
 
 button.secondary {
-  background-color: #eef5ff;
-  color: #0b4b99;
-  border: 1px solid #b8d4f5;
+  background-color: var(--secondary-bg);
+  color: var(--secondary-text);
+  border: 1px solid var(--secondary-border);
 }
 
 #results {
-  background: #fff;
+  background: var(--surface);
   padding: 18px;
   border-radius: 8px;
   box-shadow: var(--shadow);
@@ -245,6 +291,15 @@ th {
 }
 
 @media (max-width: 800px) {
+  .header-top {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .theme-toggle-btn {
+    width: 100%;
+  }
+
   .form-actions {
     flex-direction: column;
   }
