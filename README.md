@@ -1,5 +1,9 @@
 ﻿# rMAPS 3
 
+![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue)
+![Tests](https://github.com/abdelrahmanvxn/rMAPS-3/workflows/CI/badge.svg)
+![Platforms](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey)
+
 RNA Map Analysis and Plotting Server (rMAPS) generates RNA maps for RNA-binding protein (RBP) analysis around alternative splicing events.
 
 Original rMAPS website: http://rmaps.cecsresearch.org/
