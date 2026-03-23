@@ -138,6 +138,10 @@ function setupEventListeners() {
     backBtn.addEventListener("click", resetUI);
   }
   form.addEventListener("change", saveToStorage);
+  
+  // Setup collapsible analysis parameters
+  setupCollapsibleParams();
+  
   setAnalysisMode(currentAnalysisType);
 }
 
@@ -710,4 +714,22 @@ function applyLocationState() {
   } finally {
     suppressHistoryPush = false;
   }
+}
+
+function setupCollapsibleParams() {
+  const legend = document.getElementById("analysisParamsLegend");
+  const content = document.getElementById("analysisParamsContent");
+  
+  if (!legend || !content) return;
+  
+  legend.addEventListener("click", () => {
+    const isHidden = content.style.display === "none";
+    content.style.display = isHidden ? "block" : "none";
+    
+    // Rotate arrow
+    const arrow = legend.querySelector(".collapse-arrow");
+    if (arrow) {
+      arrow.style.transform = isHidden ? "rotate(90deg)" : "rotate(0deg)";
+    }
+  });
 }

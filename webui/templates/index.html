@@ -107,41 +107,46 @@
             </fieldset>
 
             <fieldset>
-                <legend id="analysisParamsLegend">4. Analysis Parameters (Optional)</legend>
+                <legend id="analysisParamsLegend" class="collapsible-legend" style="cursor: pointer; user-select: none;">
+                    <span class="collapse-arrow" style="display: inline-block; margin-right: 8px; transition: transform 0.3s;">▶</span>
+                    <span>4. Analysis Parameters (Optional)</span>
+                </legend>
 
-                <div class="form-group">
-                    <label for="window">Sliding Window Size</label>
-                    <input type="number" id="window" name="window" value="50" min="10" max="200">
-                </div>
+                <div id="analysisParamsContent" class="collapsible-content" style="display: none;">
+                    <div class="form-group">
+                        <label for="window">Sliding Window Size</label>
+                        <input type="number" id="window" name="window" value="50" min="10" max="200">
+                    </div>
 
-                <div class="form-group">
-                    <label for="step">Window Step Size</label>
-                    <input type="number" id="step" name="step" value="1" min="1" max="10">
-                </div>
+                    <div class="form-group">
+                        <label for="step">Window Step Size</label>
+                        <input type="number" id="step" name="step" value="1" min="1" max="10">
+                    </div>
 
-                <div class="form-group">
-                    <label for="intron">Intron Region Length</label>
-                    <input type="number" id="intron" name="intron" value="250" min="50" max="500">
-                </div>
+                    <div class="form-group">
+                        <label for="intron">Intron Region Length</label>
+                        <input type="number" id="intron" name="intron" value="250" min="50" max="500">
+                    </div>
 
-                <div class="form-group">
-                    <label for="exon">Exon Region Length</label>
-                    <input type="number" id="exon" name="exon" value="50" min="10" max="200">
-                </div>
+                    <div class="form-group">
+                        <label for="exon">Exon Region Length</label>
+                        <input type="number" id="exon" name="exon" value="50" min="10" max="200">
+                    </div>
 
-                <div class="form-group">
-                    <label for="fdr">FDR Cutoff</label>
-                    <input type="number" id="fdr" name="fdr" value="0.05" min="0" max="1" step="0.01">
-                </div>
+                    <div class="form-group">
+                        <label for="fdr">FDR Cutoff</label>
+                        <input type="number" id="fdr" name="fdr" value="0.05" min="0" max="1" step="0.01">
+                    </div>
 
-                <div class="form-group">
-                    <label for="deltaPsi">PSI Difference Cutoff</label>
-                    <input type="number" id="deltaPsi" name="delta_psi" value="0.05" min="0" max="1" step="0.01">
-                </div>
+                    <div class="form-group">
+                        <label for="deltaPsi">PSI Difference Cutoff</label>
+                        <input type="number" id="deltaPsi" name="delta_psi" value="0.05" min="0" max="1" step="0.01">
+                    </div>
 
-                <div class="form-group">
-                    <label for="label">RBP Label</label>
-                    <input type="text" id="label" name="label" value="RBP">
+                    <div class="form-group">
+                        <label for="label">RBP Label</label>
+                        <input type="text" id="label" name="label" value="RBP">
+                    </div>
                 </div>
             </fieldset>
 
