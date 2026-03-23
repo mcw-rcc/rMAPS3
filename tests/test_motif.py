@@ -19,7 +19,7 @@ from datetime import datetime
 MOTIF_EVENTS = {
     "se": {
         "name": "Skipped Exon (SE)",
-        "rMATS": "data/test/clip/ES/se.rMATS.txt",
+            "rMATS": "data/test/clip/SE/se.rMATS.txt",
         "output": "results/test_motif_se",
     },
     "a5ss": {
