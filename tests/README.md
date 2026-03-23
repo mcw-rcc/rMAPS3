@@ -53,13 +53,7 @@ python tests/test_motif.py --verbose
 python tests/test_motif.py --list
 ```
 
-Event types:
-
-- `se`
-- `a5ss`
-- `a3ss`
-- `mxe`
-- `ri`
+Event types: same set as CLIP test suite (`se`, `a5ss`, `a3ss`, `mxe`, `ri`).
 
 ## Prerequisites
 
@@ -72,7 +66,7 @@ Common:
 CLIP tests use:
 
 - `data/test/clip/PIPE-CLIP.Clusters.bed`
-- `data/test/clip/ES/se.rMATS.txt`
+- `data/test/clip/SE/se.rMATS.txt`
 - `data/test/clip/A3SS/a3ss.rMATS.txt`
 - `data/test/clip/A5SS/a5ss.rMATS.txt`
 - `data/test/clip/RI/ri.rMATS.txt`
@@ -81,11 +75,7 @@ CLIP tests use:
 Motif tests use:
 
 - `data/testMotifs.txt`
-- `data/test/clip/ES/se.rMATS.txt`
-- `data/test/clip/A3SS/a3ss.rMATS.txt`
-- `data/test/clip/A5SS/a5ss.rMATS.txt`
-- `data/test/clip/RI/ri.rMATS.txt`
-- `data/test/clip/MXE/mxe.rMATS.txt`
+- Same event-specific rMATS files listed above under CLIP tests
 - FASTA files under `<fasta-root>/<genome>/<genome>.fa`
 
 Optional:

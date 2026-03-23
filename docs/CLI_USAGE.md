@@ -12,7 +12,7 @@ python cli.py convert --help
 python cli.py exon-sets --help
 ```
 
-## Half 1: Motif Map
+## Motif Map Commands
 
 ### Supported Event Types
 
@@ -129,7 +129,7 @@ python cli.py motif-map mxe \
   --miso NA --up NA --down NA --background NA
 ```
 
-## Half 2: CLIP Map
+## CLIP Map Commands
 
 ### Supported Event Types
 
@@ -185,7 +185,7 @@ Use for cassette-exon CLIP enrichment maps.
 python cli.py clip-map se \
   --peak data/test/clip/PIPE-CLIP.Clusters.bed \
   --output results/clip_se \
-  --rMATS data/test/clip/ES/se.rMATS.txt \
+  --rMATS data/test/clip/SE/se.rMATS.txt \
   --miso NA --up NA --down NA --background NA \
   --label PTB \
   --sigFDR 0.05 --sigDeltaPSI 0.05

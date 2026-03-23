@@ -64,6 +64,13 @@ Quick CLI smoke check:
 python tests/smoke_cli.py
 ```
 
+Recommended pre-deployment validation:
+
+```bash
+python tests/test_clip.py
+python tests/test_motif.py --fasta-root genomedata --genome hg19
+```
+
 Optional command checks:
 
 ```bash
@@ -85,6 +92,6 @@ Then open `http://127.0.0.1:5000`.
 
 ## 6. Next Docs
 
-- CLI examples and command reference: `docs/CLI_USAGE.md`
-- Web UI details: `webui/README.md`
-- Test scripts and matrix: `tests/README.md`
+- CLI examples and command reference: [`CLI_USAGE.md`](CLI_USAGE.md)
+- Web UI details: [`../webui/README.md`](../webui/README.md)
+- Test scripts and matrix: [`../tests/README.md`](../tests/README.md)

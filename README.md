@@ -30,21 +30,13 @@ python -m pip install -r requirements.txt
 - Full CLI reference and event-type details: [`docs/CLI_USAGE.md`](docs/CLI_USAGE.md)
 - Web UI usage and API: [`webui/README.md`](webui/README.md)
 - Testing guide: [`tests/README.md`](tests/README.md)
+- Legacy test script notes: [`tests/legacy/README.md`](tests/legacy/README.md)
 
 ## Genome Data Layout
 
-Pass `--fasta-root` (or legacy alias `--fastaRoot`) pointing to:
-
-```text
-genomedata/
-  hg19/hg19.fa
-  hg38/hg38.fa
-  mm10/mm10.fa
-  dm3/dm3.fa
-  ...
-```
-
-The loader expects `<build>/<build>.fa` under FASTA root.
+Pass `--fasta-root` (or legacy alias `--fastaRoot`) to a directory that contains `<build>/<build>.fa`.
+Examples: `genomedata/hg19/hg19.fa`, `genomedata/hg38/hg38.fa`, `genomedata/mm10/mm10.fa`.
+For setup and verification steps, see [`docs/INSTALL.md`](docs/INSTALL.md).
 
 ## Project Structure
 
@@ -71,7 +63,14 @@ Run smoke checks:
 python tests/smoke_cli.py
 ```
 
-For full commands (all event types for motif-map and clip-map), see [`docs/CLI_USAGE.md`](docs/CLI_USAGE.md).
+Run integration suites:
+
+```bash
+python tests/test_clip.py
+python tests/test_motif.py --fasta-root genomedata --genome hg19
+```
+
+For full command reference (all event types and options), see [`docs/CLI_USAGE.md`](docs/CLI_USAGE.md).
 
 ## Web UI (Local)
 
@@ -86,6 +85,7 @@ Open `http://127.0.0.1:5000`.
 - Use `cli.py` as the stable public interface.
 - `legacy/` scripts are implementation engines.
 - `--fasta-root` is canonical; `--fastaRoot` is accepted for compatibility.
+- Python test suites in `tests/` are the maintained validation path; shell scripts in `tests/legacy/` are compatibility-only.
 
 ## Troubleshooting
 
