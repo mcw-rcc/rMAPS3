@@ -14,6 +14,32 @@ Original rMAPS website: http://rmaps.cecsresearch.org/
 - Unified CLI in `cli.py` for motif maps, CLIP maps, MISO conversion, and exon-set generation.
 - Local Web UI launcher in `run_web.py`.
 
+## Screenshots
+
+### Web UI
+
+Motif mode (collapsed optional parameters):
+
+![Web UI Motif Map](docs/WEBUI_MotifMap.png)
+
+CLIP mode (collapsed optional parameters):
+
+![Web UI CLIP-seq](docs/WEBUI_ClipSeq.png)
+
+Optional analysis parameters (expanded):
+
+![Web UI Optional Parameters Expanded](docs/WEBUI_OPTIONAL.png)
+
+### CLI
+
+Global help:
+
+![CLI Global Help](docs/CLI_HELP.png)
+
+Motif event-specific help:
+
+![CLI Motif Map SE Help](docs/CLI_SE.png)
+
 ## Requirements
 
 - Python 3.10+

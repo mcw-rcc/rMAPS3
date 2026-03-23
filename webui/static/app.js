@@ -20,6 +20,7 @@ const inputTypeRadios = document.querySelectorAll('input[name="input_type"]');
 const motifFilesFieldset = document.getElementById("motifFilesFieldset");
 const motifFilesLegend = document.getElementById("motifFilesLegend");
 const analysisParamsLegend = document.getElementById("analysisParamsLegend");
+const analysisParamsLegendText = document.getElementById("analysisParamsLegendText");
 const rmatsInput = document.getElementById("rmatsInput");
 const misoInput = document.getElementById("misoInput");
 const coordinatesInput = document.getElementById("coordinatesInput");
@@ -174,8 +175,8 @@ function setAnalysisMode(mode) {
   if (motifFilesLegend) {
     motifFilesLegend.textContent = "3. Select RBP Motifs";
   }
-  if (analysisParamsLegend) {
-    analysisParamsLegend.textContent =
+  if (analysisParamsLegendText) {
+    analysisParamsLegendText.textContent =
       currentAnalysisType === "motif"
         ? "4. Analysis Parameters (Optional)"
         : "3. Analysis Parameters (Optional)";
