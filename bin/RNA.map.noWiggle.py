@@ -373,20 +373,6 @@ def computeWilcoxonP(cdist_one, cdist_two,
                                  len(cdist_two[zz][locus]) -
                                  sum(cdist_two[zz][locus])) / myFactor))
                  ]], 'greater')[1]
-            # test_p[zz][locus] = stats.fisher_exact(
-            #     [[
-            #         sum(cdist_one[zz][locus]) / myFactor,
-            #         max(0,
-            #             len(cdist_one[zz][locus]) - sum(cdist_one[zz][locus]))
-            #         / myFactor
-            #     ],
-            #      [
-            #          sum(cdist_two[zz][locus]) / myFactor,
-            #          max(0,
-            #              len(cdist_two[zz][locus]) - sum(cdist_two[zz][locus]))
-            #          / myFactor
-            #      ]], 'greater')[1]
-            ## store p-value
 
 
 def printCountDist(

@@ -8,6 +8,8 @@ import sys
 import subprocess
 import os
 
+from rmaps_core.input_utils import maybe_prepare_rmats_input
+
 
 PYTHON = sys.executable
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -117,6 +119,8 @@ def run_motif_map(
     can call a single entrypoint per event.
     """
     script_path = event_script(event)
+    output = Path(output)
+    rmats = maybe_prepare_rmats_input(rmats, output)
     cmd: list[str] = [
         PYTHON,
         str(script_path),
