@@ -70,29 +70,29 @@
                 <div id="rmatsInput" class="input-section">
                     <div class="form-group">
                         <label for="rmatsFile">rMATS Output File *</label>
-                        <input type="file" id="rmatsFile" name="rmats_file" accept=".txt" required>
+                        <input type="file" id="rmatsFile" name="rmats_file" required>
                     </div>
                 </div>
 
                 <div id="misoInput" class="input-section" style="display: none;">
                     <div class="form-group">
                         <label for="misoFile">MISO Output File *</label>
-                        <input type="file" id="misoFile" name="miso_file" accept=".txt,.miso_bf">
+                        <input type="file" id="misoFile" name="miso_file">
                     </div>
                 </div>
 
                 <div id="coordinatesInput" class="input-section" style="display: none;">
                     <div class="form-group">
                         <label for="upFile">Upregulated Exons *</label>
-                        <input type="file" id="upFile" name="up_file" accept=".txt">
+                        <input type="file" id="upFile" name="up_file">
                     </div>
                     <div class="form-group">
                         <label for="dnFile">Downregulated Exons *</label>
-                        <input type="file" id="dnFile" name="down_file" accept=".txt">
+                        <input type="file" id="dnFile" name="down_file">
                     </div>
                     <div class="form-group">
                         <label for="bgFile">Background Exons *</label>
-                        <input type="file" id="bgFile" name="bg_file" accept=".txt">
+                        <input type="file" id="bgFile" name="bg_file">
                     </div>
                 </div>
             </fieldset>
@@ -102,12 +102,12 @@
 
                 <div class="form-group">
                     <label for="knownMotifs">Known RBP Motifs File *</label>
-                    <input type="file" id="knownMotifs" name="known_motifs_file" accept=".txt" required>
+                    <input type="file" id="knownMotifs" name="known_motifs_file" required>
                 </div>
 
                 <div class="form-group">
                     <label for="customMotifs">Custom Motifs (Optional)</label>
-                    <input type="file" id="customMotifs" name="motifs_file" accept=".txt">
+                    <input type="file" id="customMotifs" name="motifs_file">
                 </div>
             </fieldset>
 
@@ -152,6 +152,26 @@
                         <label for="label">RBP Label</label>
                         <input type="text" id="label" name="label" value="RBP">
                     </div>
+
+                            <div class="form-group">
+                                <label for="statMethod">P-value Method</label>
+                                <select id="statMethod" name="stat_method">
+                                    <option value="fisher" selected>Fisher exact (default - permissive)</option>
+                                    <option value="mannwhitney_greater">Mann-Whitney U (one-sided, directional)</option>
+                                    <option value="brunnermunzel_greater">Brunner-Munzel (one-sided, robust)</option>
+                                    <option value="permutation_one_sided">Permutation test (one-sided, slower)</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="statPermutations">Permutation Count (optional)</label>
+                                <input type="number" id="statPermutations" name="stat_permutations" value="" min="50" step="50" placeholder="Default: 500">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="statSeed">Permutation Seed (optional)</label>
+                                <input type="number" id="statSeed" name="stat_seed" value="" min="0" step="1" placeholder="Default: 1337">
+                            </div>
                 </div>
             </fieldset>
 

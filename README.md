@@ -13,6 +13,7 @@ Original rMAPS website: http://rmaps.cecsresearch.org/
 - Original rMAPS motif-map and CLIP-map workflows updated for Python 3.
 - Unified CLI in `cli.py` for motif maps, CLIP maps, MISO conversion, and exon-set generation.
 - Local Web UI launcher in `run_web.py`.
+- Selectable p-value methods in both CLI and Web UI: `fisher`, `mannwhitney_greater`, `brunnermunzel_greater`, and `permutation_one_sided`.
 
 ## Screenshots
 

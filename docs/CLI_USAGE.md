@@ -55,7 +55,25 @@ python cli.py motif-map mxe --help
 - `--step` (default `1`)
 - `--sig-fdr` / `--sigFDR` (default `0.05`)
 - `--sig-delta-psi` / `--sigDeltaPSI` (default `0.05`)
+- `--stat-method` / `--statMethod` (default `fisher`)
+  - Allowed values: `fisher`, `mannwhitney_greater`, `brunnermunzel_greater`, `permutation_one_sided`
+- `--stat-permutations` / `--statPermutations` (optional; permutation count for `permutation_one_sided`)
+- `--stat-seed` / `--statSeed` (optional; RNG seed for `permutation_one_sided`)
+- `--keep-temp` (keep `output/temp` after success; by default temp is cleaned on success and kept on failures)
 - `--separate`
+
+### Statistical Methods
+
+- `fisher` (default): one-sided Fisher exact test on motif-count contingency tables.
+- `mannwhitney_greater`: one-sided Mann-Whitney U test on per-position motif count distributions.
+- `brunnermunzel_greater`: one-sided Brunner-Munzel test for stochastic dominance with weaker equal-variance assumptions.
+- `permutation_one_sided`: one-sided empirical permutation test on mean differences.
+
+Permutation guidance:
+- `permutation_one_sided` is much slower than the other methods.
+- Runtime scales with `--stat-permutations`.
+- Use `--stat-seed` for reproducibility.
+- Practical workflow: develop/debug with `fisher` (or rank-based methods), then run permutation for final robustness checks.
 
 ### Event Details and Examples
 
@@ -169,6 +187,10 @@ python cli.py clip-map mxe --help
 - `--step` (default `1`)
 - `--sig-fdr` / `--sigFDR`
 - `--sig-delta-psi` / `--sigDeltaPSI`
+- `--stat-method` / `--statMethod` (same method set as motif-map; see Statistical Methods above; default `fisher`)
+- `--stat-permutations` / `--statPermutations` (optional; permutation count for `permutation_one_sided`)
+- `--stat-seed` / `--statSeed` (optional; RNG seed for `permutation_one_sided`)
+- `--keep-temp` (keep `output/temp` after success; by default temp is cleaned on success and kept on failures)
 - `--separate`
 
 Default thresholds by event:

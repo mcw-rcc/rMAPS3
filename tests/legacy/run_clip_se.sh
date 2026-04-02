@@ -10,7 +10,7 @@ echo "Testing CLIP-seq SE analysis..."
 python cli.py clip-map se \
   --peak data/test/clip/PIPE-CLIP.Clusters.bed \
   --output results/clip_test_se \
-  --rMATS data/test/clip/ES/se.rMATS.txt \
+  --rMATS data/test/clip/SE/se.rMATS.txt \
   --miso NA \
   --up NA \
   --down NA \

@@ -30,6 +30,8 @@ def smoke_cli_help() -> None:
     commands = [
         [PYTHON, "cli.py", "--help"],
         [PYTHON, "cli.py", "motif-map", "--help"],
+        [PYTHON, "cli.py", "motif-map", "se", "--help"],
+        [PYTHON, "cli.py", "clip-map", "se", "--help"],
         [PYTHON, "cli.py", "convert", "--help"],
         [PYTHON, "cli.py", "exon-sets", "--help"],
     ]

@@ -243,14 +243,17 @@ button.secondary {
 .status-badge.queued,
 .status-badge.running {
   background-color: #ffe8a3;
+  color: #333;
 }
 
 .status-badge.completed {
   background-color: #d4f5df;
+  color: #155724;
 }
 
 .status-badge.failed {
   background-color: #ffd6db;
+  color: #721c24;
 }
 
 .error,

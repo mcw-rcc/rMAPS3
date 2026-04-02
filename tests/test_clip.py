@@ -14,6 +14,7 @@ import sys
 from pathlib import Path
 from datetime import datetime
 
+
 # CLIP event type configurations
 CLIP_EVENTS = {
     "se": {
@@ -66,6 +67,12 @@ EVENT_THRESHOLDS = {
     "ri": {"sigFDR": "0.05", "sigDeltaPSI": "0.05"},
 }
 
+DEFAULT_COMPARE_METHODS = [
+    "fisher",
+    "mannwhitney_greater",
+    "brunnermunzel_greater",
+]
+
 
 def run_clip_test(event_type, config, verbose=False):
     """Run CLIP test for a specific event type."""
@@ -114,10 +121,85 @@ def run_clip_test(event_type, config, verbose=False):
         if result.stdout:
             print(f"Output: {result.stdout}")
         return False
-
     except Exception as e:
         print(f"FAIL with exception: {e}")
         return False
+
+
+def count_significant_windows(pval_file: Path, threshold: float = 0.05) -> int:
+    if not pval_file.exists():
+        return -1
+    count = 0
+    with pval_file.open("r", encoding="utf-8", errors="replace") as handle:
+        next(handle, None)
+        for line in handle:
+            parts = line.strip().split("\t")
+            if len(parts) < 3:
+                continue
+            try:
+                if float(parts[2]) < threshold:
+                    count += 1
+            except ValueError:
+                continue
+    return count
+
+
+def run_clip_method_compare(event_type, config, methods, verbose=False):
+    print(f"\n{'='*70}")
+    print(f"Comparing CLIP methods: {config['name']}")
+    print(f"{'='*70}")
+
+    thresholds = EVENT_THRESHOLDS[event_type]
+    base_out = Path(config["output"])
+    method_outputs = {method: f"{base_out}_{method}" for method in methods}
+
+    for method, out_dir in method_outputs.items():
+        cmd = [
+            sys.executable, "cli.py", "clip-map", event_type,
+            "--peak", config["peak"],
+            "--output", out_dir,
+            "--rMATS", config["rMATS"],
+            "--miso", COMMON_PARAMS["miso"],
+            "--up", COMMON_PARAMS["up"],
+            "--down", COMMON_PARAMS["down"],
+            "--background", COMMON_PARAMS["background"],
+            "--label", COMMON_PARAMS["label"],
+            "--sigFDR", thresholds["sigFDR"],
+            "--sigDeltaPSI", thresholds["sigDeltaPSI"],
+            "--stat-method", method,
+        ]
+        if method == "permutation_one_sided":
+            cmd.extend(["--stat-permutations", "200", "--stat-seed", "1337"])
+        if verbose:
+            print(f"Command: {' '.join(cmd)}")
+        result = subprocess.run(
+            cmd,
+            capture_output=True,
+            text=True,
+            cwd=Path(__file__).parent.parent,
+        )
+        if result.returncode != 0:
+            print(f"FAIL ({method}) exit code {result.returncode}")
+            if result.stderr:
+                print(result.stderr)
+            return False
+
+    summary = []
+    for method, out_dir in method_outputs.items():
+        up_file = Path(out_dir) / "pVal.up.vs.bg.RNAmap.txt"
+        dn_file = Path(out_dir) / "pVal.dn.vs.bg.RNAmap.txt"
+        up_sig = count_significant_windows(up_file)
+        dn_sig = count_significant_windows(dn_file)
+        if min(up_sig, dn_sig) < 0:
+            print(f"FAIL (missing p-value output files for method={method})")
+            return False
+        summary.append((method, up_sig, dn_sig))
+
+    for method, up_sig, dn_sig in summary:
+        print(f"Significant windows (p<0.05): method={method}, up={up_sig}, dn={dn_sig}")
+
+    print("PASS method comparison")
+    return True
 
 
 def list_events():
@@ -159,7 +241,16 @@ Examples:
         action="store_true",
         help="Show detailed output"
     )
-
+    parser.add_argument(
+        "--compare-methods",
+        action="store_true",
+        help="Run selected method set and verify all method paths produce valid outputs.",
+    )
+    parser.add_argument(
+        "--include-permutation",
+        action="store_true",
+        help="Include permutation_one_sided in --compare-methods runs (slower).",
+    )
     args = parser.parse_args()
 
     if args.list:
@@ -167,6 +258,9 @@ Examples:
         return 0
 
     events_to_test = args.event if args.event else list(CLIP_EVENTS.keys())
+    compare_methods = list(DEFAULT_COMPARE_METHODS)
+    if args.include_permutation:
+        compare_methods.append("permutation_one_sided")
 
     print("\n" + "="*70)
     print("CLIP MAP TEST SUITE")
@@ -177,7 +271,10 @@ Examples:
     results = {}
     for event_type in events_to_test:
         config = CLIP_EVENTS[event_type]
-        success = run_clip_test(event_type, config, args.verbose)
+        if args.compare_methods:
+            success = run_clip_method_compare(event_type, config, compare_methods, args.verbose)
+        else:
+            success = run_clip_test(event_type, config, args.verbose)
         results[event_type] = success
 
     print("\n" + "="*70)

@@ -25,6 +25,8 @@ Open:
   - MISO upload
   - coordinate file upload (`up`, `down`, `bg`)
 - CLIP-seq mode peak upload (`.bed`) for `clip-map`
+- P-value method selector (`fisher`, `mannwhitney_greater`, `brunnermunzel_greater`, `permutation_one_sided`)
+- Optional permutation controls (`stat_permutations`, `stat_seed`) for permutation runs
 - Live status polling
 - Live log tail during job execution
 - One-click local test run
@@ -52,6 +54,21 @@ Open:
 - `RMAPS_MAX_UPLOAD_MB`:
   maximum upload size in MB (default: `200`)
 
+## P-value Method
+
+- The Analysis Parameters panel includes a **P-value Method** selector.
+- Methods available: `fisher` (default), `mannwhitney_greater`, `brunnermunzel_greater`, `permutation_one_sided`.
+- Optional fields `stat_permutations` and `stat_seed` are used by `permutation_one_sided` and ignored by other methods.
+- Selected method is submitted as `stat_method` in `/api/submit` and used by both motif-map and clip-map runs.
+
+Method guidance:
+- Use `fisher` for backward-compatible and fast baseline runs.
+- Use `mannwhitney_greater` or `brunnermunzel_greater` for rank/distribution-based alternatives.
+- Use `permutation_one_sided` for empirical confirmation when runtime is less constrained.
+
+Performance note:
+- `permutation_one_sided` can take significantly longer than other methods, especially with high `stat_permutations`.
+
 ## Key Endpoints
 
 - `GET /`:
@@ -61,7 +78,7 @@ Open:
 - `GET /api/events?analysis_type=motif|clip`:
   Supported event types for selected analysis mode
 - `POST /api/submit`:
-  Submit user job
+  Submit user job (includes `stat_method` field)
 - `POST /api/quick-test/run`:
   Submit one-click test job
 - `GET /api/status/<job_id>`:

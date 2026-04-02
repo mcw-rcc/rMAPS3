@@ -16,11 +16,13 @@ from flask import Flask, jsonify, render_template, request
 try:
     from rmaps_core.motif_map_core import EVENT_SPECS, run_motif_map
     from rmaps_core.clip_core import CLIP_EVENT_SPECS, run_clip_map
+    from rmaps_core.stat_utils import normalize_stat_method
 except ModuleNotFoundError:
     # Allow running `python webui/app.py` directly.
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
     from rmaps_core.motif_map_core import EVENT_SPECS, run_motif_map
     from rmaps_core.clip_core import CLIP_EVENT_SPECS, run_clip_map
+    from rmaps_core.stat_utils import normalize_stat_method
 
 LOGGER = logging.getLogger(__name__)
 SUPPORTED_GENOMES = {
@@ -47,6 +49,37 @@ SUPPORTED_GENOMES = {
 
 def _repo_root() -> Path:
     return Path(__file__).resolve().parents[1]
+
+
+def _parse_rnamap_min_pvals(path: Path) -> dict[str, float]:
+    agg: dict[str, float] = {}
+    if not path.exists():
+        return agg
+
+    with open(path, "r", encoding="utf-8", errors="ignore") as handle:
+        _ = handle.readline()
+        for line in handle:
+            line = line.strip()
+            if not line:
+                continue
+            parts = line.split("\t")
+            if len(parts) < 2:
+                continue
+            name = Path(parts[0]).name
+            pvals: list[float] = []
+            for raw in parts[1:]:
+                try:
+                    p = float(raw)
+                    if 0.0 < p <= 1.0:
+                        pvals.append(p)
+                except Exception:
+                    continue
+            if not pvals:
+                continue
+            best = min(pvals)
+            if name not in agg or best < agg[name]:
+                agg[name] = best
+    return agg
 
 
 def _tail_lines(path: Path, max_lines: int) -> list[str]:
@@ -163,7 +196,7 @@ def create_app() -> Flask:
     app.config["RESULTS_FOLDER"].mkdir(parents=True, exist_ok=True)
 
     logging.basicConfig(level=logging.INFO, format="%(asctime)s | %(levelname)-8s | %(message)s")
-    app.jobs: dict[str, dict[str, Any]] = {}
+    app.jobs = {}
     app.jobs_lock = Lock()
     app.executor = ThreadPoolExecutor(max_workers=2, thread_name_prefix="rmaps-web")
 
@@ -206,7 +239,7 @@ def register_routes(app: Flask) -> None:
 
         if analysis_type == "clip":
             clip_event_file = {
-                "se": ("ES", "se.rMATS.txt"),
+                "se": ("SE", "se.rMATS.txt"),
                 "a3ss": ("A3SS", "a3ss.rMATS.txt"),
                 "a5ss": ("A5SS", "a5ss.rMATS.txt"),
                 "ri": ("RI", "ri.rMATS.txt"),
@@ -288,6 +321,9 @@ def register_routes(app: Flask) -> None:
                 sig_fdr=params["sig_fdr"],
                 sig_delta_psi=params["sig_delta_psi"],
                 separate=False,
+                stat_method=params.get("stat_method", "fisher"),
+                stat_permutations=params.get("stat_permutations"),
+                stat_seed=params.get("stat_seed"),
             )
         else:
             code = run_motif_map(
@@ -310,6 +346,9 @@ def register_routes(app: Flask) -> None:
                 sig_fdr=params["sig_fdr"],
                 sig_delta_psi=params["sig_delta_psi"],
                 separate=False,
+                stat_method=params.get("stat_method", "fisher"),
+                stat_permutations=params.get("stat_permutations"),
+                stat_seed=params.get("stat_seed"),
             )
 
         with app.jobs_lock:
@@ -450,6 +489,9 @@ def register_routes(app: Flask) -> None:
                     "sig_fdr": sig_fdr,
                     "sig_delta_psi": sig_delta_psi,
                     "rbp_label": "QuickTest",
+                    "stat_method": "fisher",
+                    "stat_permutations": None,
+                    "stat_seed": None,
                 },
                 "output_dir": str(job_dir),
             }
@@ -533,7 +575,13 @@ def register_routes(app: Flask) -> None:
                 "sig_fdr": float(request.form.get("fdr", 0.005 if analysis_type == "clip" and event_type == "a5ss" else 0.05)),
                 "sig_delta_psi": float(request.form.get("delta_psi", 0.01 if analysis_type == "clip" and event_type == "a5ss" else 0.05)),
                 "rbp_label": request.form.get("label", "RBP"),
+                "stat_method": request.form.get("stat_method", "fisher"),
+                "stat_permutations": request.form.get("stat_permutations", "").strip(),
+                "stat_seed": request.form.get("stat_seed", "").strip(),
             }
+            params["stat_method"] = normalize_stat_method(params["stat_method"])
+            params["stat_permutations"] = int(params["stat_permutations"]) if params["stat_permutations"] else None
+            params["stat_seed"] = int(params["stat_seed"]) if params["stat_seed"] else None
 
             with app.jobs_lock:
                 app.jobs[job_id] = {
@@ -667,40 +715,18 @@ def register_routes(app: Flask) -> None:
             agg: dict[str, dict[str, float]] = {}
 
             def parse_rnamap(path: Path, key: str) -> None:
-                if not path.exists():
-                    return
-                with open(path, "r", encoding="utf-8", errors="ignore") as handle:
-                    _ = handle.readline()
-                    for line in handle:
-                        line = line.strip()
-                        if not line:
-                            continue
-                        parts = line.split("\t")
-                        if len(parts) < 2:
-                            continue
-                        motif_name = Path(parts[0]).name
-                        pvals: list[float] = []
-                        for raw in parts[1:]:
-                            try:
-                                p = float(raw)
-                                if p > 0.0:
-                                    pvals.append(p)
-                            except Exception:
-                                continue
-                        if not pvals:
-                            continue
-                        best = min(pvals)
-                        row = agg.setdefault(
-                            motif_name,
-                            {
-                                "rbp": motif_name,
-                                "pval_up_vs_bg": 1.0,
-                                "pval_dn_vs_bg": 1.0,
-                                "log_pval_up": 0.0,
-                                "log_pval_dn": 0.0,
-                            },
-                        )
-                        row[key] = best
+                for motif_name, best in _parse_rnamap_min_pvals(path).items():
+                    row = agg.setdefault(
+                        motif_name,
+                        {
+                            "rbp": motif_name,
+                            "pval_up_vs_bg": 1.0,
+                            "pval_dn_vs_bg": 1.0,
+                            "log_pval_up": 0.0,
+                            "log_pval_dn": 0.0,
+                        },
+                    )
+                    row[key] = best
 
             parse_rnamap(up_file, "pval_up_vs_bg")
             parse_rnamap(dn_file, "pval_dn_vs_bg")

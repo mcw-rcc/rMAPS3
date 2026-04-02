@@ -3,15 +3,8 @@ import shutil
 
 from pyx import *
 
-try:
-    import pypdfium2 as pdfium
-except Exception:
-    pdfium = None
-
-try:
-    from PIL import Image
-except Exception:
-    Image = None
+pdfium = None
+Image = None
 
 
 def boxes(xS, width, scale, boxY, box_height, splice_offset):
@@ -164,6 +157,8 @@ def export_canvas_outputs(canv,
     pdf_ok = False
     png_ok = False
 
+    global pdfium, Image
+
     try:
         canv.writePDFfile(pdf_path)
         pdf_ok = True
@@ -171,17 +166,14 @@ def export_canvas_outputs(canv,
         if logger:
             logger.debug("Native PDF export failed for %s: %s", pdf_path, exc)
 
-    try:
-        tmpdir = os.path.dirname(pdf_path) or "."
-        gs_tmp = os.path.join(tmpdir, "jj.png")
-        canv.writeGSfile(gs_tmp, "png16m", resolution=png_resolution)
-        shutil.move(gs_tmp, png_path)
-        png_ok = True
-    except Exception as exc:
-        if logger:
-            logger.debug("Native PNG export failed for %s: %s", png_path, exc)
+    if pdf_ok and pdfium is None:
+        try:
+            import pypdfium2 as pdfium_module
+            pdfium = pdfium_module
+        except Exception:
+            pdfium = None
 
-    if not png_ok and pdf_ok and pdfium is not None:
+    if pdf_ok and pdfium is not None:
         try:
             doc = pdfium.PdfDocument(pdf_path)
             page = doc[0]
@@ -195,13 +187,33 @@ def export_canvas_outputs(canv,
             if logger:
                 logger.debug("PDFium PNG fallback failed for %s: %s",
                              png_path, exc)
-    elif not png_ok and pdf_ok and pdfium is None and logger:
+
+    if not png_ok:
+        try:
+            tmpdir = os.path.dirname(pdf_path) or "."
+            gs_tmp = os.path.join(tmpdir, "jj.png")
+            canv.writeGSfile(gs_tmp, "png16m", resolution=png_resolution)
+            shutil.move(gs_tmp, png_path)
+            png_ok = True
+        except Exception as exc:
+            if logger:
+                logger.debug("Native PNG export failed for %s: %s", png_path,
+                             exc)
+
+    if not png_ok and pdf_ok and pdfium is None and logger:
         logger.debug(
             "pypdfium2 unavailable; PDF-to-PNG fallback unavailable.")
 
     # Python PDF fallback: if native PDF export failed but PNG exists,
     # build a PDF from the PNG with Pillow.
     if not pdf_ok and png_ok:
+        if Image is None:
+            try:
+                from PIL import Image as pillow_image
+                Image = pillow_image
+            except Exception:
+                Image = None
+
         if Image is not None:
             try:
                 with Image.open(png_path) as im:

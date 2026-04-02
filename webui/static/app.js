@@ -690,6 +690,9 @@ function saveToStorage() {
     genome: genomeSelect.value,
     inputType: selectedInput ? selectedInput.value : "rmats",
     label: document.getElementById("label").value,
+    statMethod: document.getElementById("statMethod")?.value || "fisher",
+    statPermutations: document.getElementById("statPermutations")?.value || "",
+    statSeed: document.getElementById("statSeed")?.value || "",
   };
   localStorage.setItem("rmapsFormState", JSON.stringify(formState));
 }
@@ -709,6 +712,15 @@ function loadFromStorage() {
       }
     }
     if (state.label) document.getElementById("label").value = state.label;
+    if (state.statMethod && document.getElementById("statMethod")) {
+      document.getElementById("statMethod").value = state.statMethod;
+    }
+    if (state.statPermutations !== undefined && document.getElementById("statPermutations")) {
+      document.getElementById("statPermutations").value = state.statPermutations;
+    }
+    if (state.statSeed !== undefined && document.getElementById("statSeed")) {
+      document.getElementById("statSeed").value = state.statSeed;
+    }
   } catch (error) {
     console.error("Error loading saved form state:", error);
   }

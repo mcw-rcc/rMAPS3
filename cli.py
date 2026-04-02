@@ -5,6 +5,7 @@ import typer
 
 from rmaps_core.motif_map_core import miso_converter_script, run_subprocess, run_motif_map
 from rmaps_core.clip_core import run_clip_map
+from rmaps_core.stat_utils import supported_stat_methods
 
 
 app = typer.Typer(help="RNA motif maps, CLIP maps, and exon set utilities")
@@ -21,6 +22,35 @@ app.add_typer(exon_app, name="exon-sets")
 
 REPO_ROOT = Path(__file__).resolve().parent
 PYTHON = sys.executable
+
+SUPPORTED_STAT_METHODS = ", ".join(supported_stat_methods())
+
+STAT_METHOD_OPTION = typer.Option(
+    "fisher",
+    "--stat-method",
+    "--statMethod",
+    help=f"P-value method. Supported: {SUPPORTED_STAT_METHODS}.",
+)
+
+STAT_PERMUTATIONS_OPTION = typer.Option(
+    None,
+    "--stat-permutations",
+    "--statPermutations",
+    help="Number of permutations for permutation_one_sided (default from RMAPS_STAT_PERMUTATIONS or 500).",
+)
+
+STAT_SEED_OPTION = typer.Option(
+    None,
+    "--stat-seed",
+    "--statSeed",
+    help="RNG seed for permutation_one_sided (default from RMAPS_STAT_SEED or 1337).",
+)
+
+KEEP_TEMP_OPTION = typer.Option(
+    False,
+    "--keep-temp",
+    help="Keep output/temp on successful runs (temp is always kept on failures).",
+)
 
 
 def run_cmd(cmd: list[str]) -> None:
@@ -137,6 +167,10 @@ def motif_map_se(
         "--separate",
         help="Draw separate p-value panels under motif maps.",
     ),
+    stat_method: str = STAT_METHOD_OPTION,
+    stat_permutations: int | None = STAT_PERMUTATIONS_OPTION,
+    stat_seed: int | None = STAT_SEED_OPTION,
+    keep_temp: bool = KEEP_TEMP_OPTION,
 ) -> None:
     """
     Generate motif maps for SE events.
@@ -161,6 +195,10 @@ def motif_map_se(
         sig_fdr=sig_fdr,
         sig_delta_psi=sig_delta_psi,
         separate=separate,
+        stat_method=stat_method,
+        stat_permutations=stat_permutations,
+        stat_seed=stat_seed,
+        keep_temp=keep_temp,
     )
     raise typer.Exit(code=code)
 
@@ -200,6 +238,10 @@ def motif_map_a3ss(
     sig_fdr: float = typer.Option(0.05, "--sig-fdr", "--sigFDR"),
     sig_delta_psi: float = typer.Option(0.05, "--sig-delta-psi", "--sigDeltaPSI"),
     separate: bool = typer.Option(False, "--separate"),
+    stat_method: str = STAT_METHOD_OPTION,
+    stat_permutations: int | None = STAT_PERMUTATIONS_OPTION,
+    stat_seed: int | None = STAT_SEED_OPTION,
+    keep_temp: bool = KEEP_TEMP_OPTION,
 ) -> None:
     """
     Generate motif maps for A3SS events.
@@ -224,6 +266,10 @@ def motif_map_a3ss(
         sig_fdr=sig_fdr,
         sig_delta_psi=sig_delta_psi,
         separate=separate,
+        stat_method=stat_method,
+        stat_permutations=stat_permutations,
+        stat_seed=stat_seed,
+        keep_temp=keep_temp,
     )
     raise typer.Exit(code=code)
 
@@ -248,6 +294,10 @@ def motif_map_a5ss(
     sig_fdr: float = typer.Option(0.05, "--sig-fdr", "--sigFDR"),
     sig_delta_psi: float = typer.Option(0.05, "--sig-delta-psi", "--sigDeltaPSI"),
     separate: bool = typer.Option(False, "--separate"),
+    stat_method: str = STAT_METHOD_OPTION,
+    stat_permutations: int | None = STAT_PERMUTATIONS_OPTION,
+    stat_seed: int | None = STAT_SEED_OPTION,
+    keep_temp: bool = KEEP_TEMP_OPTION,
 ) -> None:
     """
     Generate motif maps for A5SS events.
@@ -272,6 +322,10 @@ def motif_map_a5ss(
         sig_fdr=sig_fdr,
         sig_delta_psi=sig_delta_psi,
         separate=separate,
+        stat_method=stat_method,
+        stat_permutations=stat_permutations,
+        stat_seed=stat_seed,
+        keep_temp=keep_temp,
     )
     raise typer.Exit(code=code)
 
@@ -296,6 +350,10 @@ def motif_map_ri(
     sig_fdr: float = typer.Option(0.05, "--sig-fdr", "--sigFDR"),
     sig_delta_psi: float = typer.Option(0.05, "--sig-delta-psi", "--sigDeltaPSI"),
     separate: bool = typer.Option(False, "--separate"),
+    stat_method: str = STAT_METHOD_OPTION,
+    stat_permutations: int | None = STAT_PERMUTATIONS_OPTION,
+    stat_seed: int | None = STAT_SEED_OPTION,
+    keep_temp: bool = KEEP_TEMP_OPTION,
 ) -> None:
     """
     Generate motif maps for RI events.
@@ -320,6 +378,10 @@ def motif_map_ri(
         sig_fdr=sig_fdr,
         sig_delta_psi=sig_delta_psi,
         separate=separate,
+        stat_method=stat_method,
+        stat_permutations=stat_permutations,
+        stat_seed=stat_seed,
+        keep_temp=keep_temp,
     )
     raise typer.Exit(code=code)
 
@@ -344,6 +406,10 @@ def motif_map_mxe(
     sig_fdr: float = typer.Option(0.05, "--sig-fdr", "--sigFDR"),
     sig_delta_psi: float = typer.Option(0.05, "--sig-delta-psi", "--sigDeltaPSI"),
     separate: bool = typer.Option(False, "--separate"),
+    stat_method: str = STAT_METHOD_OPTION,
+    stat_permutations: int | None = STAT_PERMUTATIONS_OPTION,
+    stat_seed: int | None = STAT_SEED_OPTION,
+    keep_temp: bool = KEEP_TEMP_OPTION,
 ) -> None:
     """
     Generate motif maps for MXE events.
@@ -368,6 +434,10 @@ def motif_map_mxe(
         sig_fdr=sig_fdr,
         sig_delta_psi=sig_delta_psi,
         separate=separate,
+        stat_method=stat_method,
+        stat_permutations=stat_permutations,
+        stat_seed=stat_seed,
+        keep_temp=keep_temp,
     )
     raise typer.Exit(code=code)
 
@@ -394,11 +464,33 @@ def clip_map_se(
     sig_fdr: float = typer.Option(0.05, "--sig-fdr", "--sigFDR", help="FDR cutoff"),
     sig_delta_psi: float = typer.Option(0.05, "--sig-delta-psi", "--sigDeltaPSI", help="Delta PSI cutoff"),
     separate: bool = typer.Option(False, "--separate", help="Separate p-value plots"),
+    stat_method: str = STAT_METHOD_OPTION,
+    stat_permutations: int | None = STAT_PERMUTATIONS_OPTION,
+    stat_seed: int | None = STAT_SEED_OPTION,
+    keep_temp: bool = KEEP_TEMP_OPTION,
 ) -> None:
     """Generate CLIP-seq RNA map for SE (Skipped Exon) events."""
     code = run_clip_map(
-        "se", peak, output, rmats, miso, up, down, background,
-        label, intron, exon, window, step, sig_fdr, sig_delta_psi, separate
+        "se",
+        peak,
+        output,
+        rmats,
+        miso,
+        up,
+        down,
+        background,
+        label,
+        intron,
+        exon,
+        window,
+        step,
+        sig_fdr,
+        sig_delta_psi,
+        separate,
+        stat_method,
+        stat_permutations=stat_permutations,
+        stat_seed=stat_seed,
+        keep_temp=keep_temp,
     )
     raise typer.Exit(code=code)
 
@@ -420,11 +512,33 @@ def clip_map_a3ss(
     sig_fdr: float = typer.Option(0.05, "--sig-fdr", "--sigFDR", help="FDR cutoff"),
     sig_delta_psi: float = typer.Option(0.05, "--sig-delta-psi", "--sigDeltaPSI", help="Delta PSI cutoff"),
     separate: bool = typer.Option(False, "--separate", help="Separate p-value plots"),
+    stat_method: str = STAT_METHOD_OPTION,
+    stat_permutations: int | None = STAT_PERMUTATIONS_OPTION,
+    stat_seed: int | None = STAT_SEED_OPTION,
+    keep_temp: bool = KEEP_TEMP_OPTION,
 ) -> None:
     """Generate CLIP-seq RNA map for A3SS (Alternative 3' Splice Site) events."""
     code = run_clip_map(
-        "a3ss", peak, output, rmats, miso, up, down, background,
-        label, intron, exon, window, step, sig_fdr, sig_delta_psi, separate
+        "a3ss",
+        peak,
+        output,
+        rmats,
+        miso,
+        up,
+        down,
+        background,
+        label,
+        intron,
+        exon,
+        window,
+        step,
+        sig_fdr,
+        sig_delta_psi,
+        separate,
+        stat_method,
+        stat_permutations=stat_permutations,
+        stat_seed=stat_seed,
+        keep_temp=keep_temp,
     )
     raise typer.Exit(code=code)
 
@@ -446,11 +560,33 @@ def clip_map_a5ss(
     sig_fdr: float = typer.Option(0.005, "--sig-fdr", "--sigFDR", help="FDR cutoff (A5SS default 0.005)"),
     sig_delta_psi: float = typer.Option(0.01, "--sig-delta-psi", "--sigDeltaPSI", help="Delta PSI cutoff (A5SS default 0.01)"),
     separate: bool = typer.Option(False, "--separate", help="Separate p-value plots"),
+    stat_method: str = STAT_METHOD_OPTION,
+    stat_permutations: int | None = STAT_PERMUTATIONS_OPTION,
+    stat_seed: int | None = STAT_SEED_OPTION,
+    keep_temp: bool = KEEP_TEMP_OPTION,
 ) -> None:
     """Generate CLIP-seq RNA map for A5SS (Alternative 5' Splice Site) events."""
     code = run_clip_map(
-        "a5ss", peak, output, rmats, miso, up, down, background,
-        label, intron, exon, window, step, sig_fdr, sig_delta_psi, separate
+        "a5ss",
+        peak,
+        output,
+        rmats,
+        miso,
+        up,
+        down,
+        background,
+        label,
+        intron,
+        exon,
+        window,
+        step,
+        sig_fdr,
+        sig_delta_psi,
+        separate,
+        stat_method,
+        stat_permutations=stat_permutations,
+        stat_seed=stat_seed,
+        keep_temp=keep_temp,
     )
     raise typer.Exit(code=code)
 
@@ -472,11 +608,33 @@ def clip_map_ri(
     sig_fdr: float = typer.Option(0.05, "--sig-fdr", "--sigFDR", help="FDR cutoff"),
     sig_delta_psi: float = typer.Option(0.05, "--sig-delta-psi", "--sigDeltaPSI", help="Delta PSI cutoff"),
     separate: bool = typer.Option(False, "--separate", help="Separate p-value plots"),
+    stat_method: str = STAT_METHOD_OPTION,
+    stat_permutations: int | None = STAT_PERMUTATIONS_OPTION,
+    stat_seed: int | None = STAT_SEED_OPTION,
+    keep_temp: bool = KEEP_TEMP_OPTION,
 ) -> None:
     """Generate CLIP-seq RNA map for RI (Retained Intron) events."""
     code = run_clip_map(
-        "ri", peak, output, rmats, miso, up, down, background,
-        label, intron, exon, window, step, sig_fdr, sig_delta_psi, separate
+        "ri",
+        peak,
+        output,
+        rmats,
+        miso,
+        up,
+        down,
+        background,
+        label,
+        intron,
+        exon,
+        window,
+        step,
+        sig_fdr,
+        sig_delta_psi,
+        separate,
+        stat_method,
+        stat_permutations=stat_permutations,
+        stat_seed=stat_seed,
+        keep_temp=keep_temp,
     )
     raise typer.Exit(code=code)
 
@@ -498,11 +656,33 @@ def clip_map_mxe(
     sig_fdr: float = typer.Option(0.05, "--sig-fdr", "--sigFDR", help="FDR cutoff"),
     sig_delta_psi: float = typer.Option(0.05, "--sig-delta-psi", "--sigDeltaPSI", help="Delta PSI cutoff"),
     separate: bool = typer.Option(False, "--separate", help="Separate p-value plots"),
+    stat_method: str = STAT_METHOD_OPTION,
+    stat_permutations: int | None = STAT_PERMUTATIONS_OPTION,
+    stat_seed: int | None = STAT_SEED_OPTION,
+    keep_temp: bool = KEEP_TEMP_OPTION,
 ) -> None:
     """Generate CLIP-seq RNA map for MXE (Mutually Exclusive Exons) events."""
     code = run_clip_map(
-        "mxe", peak, output, rmats, miso, up, down, background,
-        label, intron, exon, window, step, sig_fdr, sig_delta_psi, separate
+        "mxe",
+        peak,
+        output,
+        rmats,
+        miso,
+        up,
+        down,
+        background,
+        label,
+        intron,
+        exon,
+        window,
+        step,
+        sig_fdr,
+        sig_delta_psi,
+        separate,
+        stat_method,
+        stat_permutations=stat_permutations,
+        stat_seed=stat_seed,
+        keep_temp=keep_temp,
     )
     raise typer.Exit(code=code)
 

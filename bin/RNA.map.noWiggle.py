@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 #
 ## this program generates RNA Map using CLIP-seq and set of exons
 #
@@ -9,8 +9,9 @@ from pyx import *
 ## for making plot
 from scipy import stats
 from pathlib import Path
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'rmaps_core'))
-from drawutils import export_canvas_outputs
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from rmaps_core.drawutils import export_canvas_outputs
+from rmaps_core.stat_utils import compute_locus_pvalue, normalize_stat_method, pvalue_header_label
 #import fisher,mne;  ## for FDR calculation
 #
 #
@@ -70,6 +71,7 @@ nd = int(sys.argv[11])
 nb = int(sys.argv[12])
 separate = int(sys.argv[13])
 event_type = sys.argv[14].upper() if len(sys.argv) > 14 else 'SE'
+stat_method = normalize_stat_method(os.environ.get('RMAPS_STAT_METHOD', 'fisher'))
 #
 ## OUTPUT, create an output folder
 #outDir = sys.argv[9];
@@ -103,11 +105,11 @@ boxHeight = iLen
 cdist_up = {}
 cdist_dn = {}
 cdist_bg = {}
-## count distribution for wilcoxon rank-sum test
+## count distribution for fisher exact test
 test_up = {}
 test_dn = {}
 
-## test stats (p-values, wilcoxon's rank sum)
+## test stats (p-values, fisher exact)
 
 #
 #
@@ -181,7 +183,7 @@ def read_OS_File(
 
 def countPeaks(
     ch, st, region, rv, ws, ss, countDist, ei
-):  ## fill up rv and countDist with proper values, exon index was passed for wilcoxon test
+):  ## fill up rv and countDist with proper values, exon index was passed for p-value testing
 
     global peaks
     global chunk
@@ -262,7 +264,7 @@ def processExons(exons,
     rVal[6] = [0] * eP
     rVal[7] = [0] * eP
 
-    ## initializing the count distribution for wilcoxon rank sum
+    ## initializing the count distribution for fisher exact
     CD[0] = {}
     CD[1] = {}
     CD[2] = {}
@@ -336,7 +338,7 @@ def processExons(exons,
     ## list with total count for each region
 
 
-def computeWilcoxonP(cdist_one, cdist_two,
+def computePValues(cdist_one, cdist_two,
                      test_p):  ## count p value for one vs. two
     rName = {
         0: 'R1',
@@ -352,27 +354,12 @@ def computeWilcoxonP(cdist_one, cdist_two,
     for zz in range(8):  ## for 8 regions
         test_p[zz] = {}
         for locus in range(len(cdist_one[zz])):
-            # test_p[zz][locus] = stats.ranksums(cdist_one[zz][locus],
-            #                                    cdist_two[zz][locus])[1]
-            test_p[zz][locus] = stats.fisher_exact(
-                [[
-                    int(ceil(sum(cdist_one[zz][locus]) / myFactor)),
-                    int(
-                        ceil(
-                            max(
-                                0,
-                                len(cdist_one[zz][locus]) -
-                                sum(cdist_one[zz][locus])) / myFactor))
-                ],
-                 [
-                     int(ceil(sum(cdist_two[zz][locus]) / myFactor)),
-                     int(
-                         ceil(
-                             max(
-                                 0,
-                                 len(cdist_two[zz][locus]) -
-                                 sum(cdist_two[zz][locus])) / myFactor))
-                 ]], 'greater')[1]
+            test_p[zz][locus] = compute_locus_pvalue(
+                cdist_one[zz][locus],
+                cdist_two[zz][locus],
+                stat_method,
+                fisher_scale=myFactor,
+            )
 
 
 def printCountDist(
@@ -410,7 +397,8 @@ def printPval(pdic, dFile, eNum):  ## print p values per position
         6: 'R7',
         7: 'R8'
     }
-    dFile.write('Region\tposition\twilcoxon.ranksum.pVal\n')
+    header = pvalue_header_label(stat_method)
+    dFile.write('Region\tposition\t' + header + '\n')
     if eNum == 0:  ## no exons in the group
         return
     for zz in range(8):  ## for 8 regions
@@ -1362,18 +1350,18 @@ except:
     print("There is an exception in printCountDist. Please check your log file")
     sys.exit(-9)
 
-###### calculate Wilcoxon's rank sum p-value
+###### calculate Fisher exact p-value
 
 try:
-    computeWilcoxonP(cdist_up, cdist_bg, test_up)
+    computePValues(cdist_up, cdist_bg, test_up)
     ## count p value for up vs. bg
-    computeWilcoxonP(cdist_dn, cdist_bg, test_dn)
+    computePValues(cdist_dn, cdist_bg, test_dn)
     ## count p value for dn vs. bg
 except:
-    logging.debug("There is an exception in computeWilcoxonP function")
+    logging.debug("There is an exception in computePValues function")
     logging.debug("Exception: %s" % sys.exc_info()[0])
     logging.debug("Detail: %s" % sys.exc_info()[1])
-    print("There is an exception in computeWilcoxonP. Please check your log file")
+    print("There is an exception in computePValues. Please check your log file")
     sys.exit(-95)
 
 upbgPFile = open(outPath + '/' + 'pVal.up.vs.bg.RNAmap.txt', 'w')
@@ -1432,3 +1420,4 @@ logging.debug("Program ran %.2d:%.2d:%.2d" %
                (runningTime % 3600) // 60, runningTime % 60))
 
 sys.exit(0)
+

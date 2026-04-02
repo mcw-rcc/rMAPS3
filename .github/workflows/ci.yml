@@ -41,6 +41,9 @@ jobs:
       - name: CLIP tests (SE + A5SS)
         run: python tests/test_clip.py --event se a5ss
 
+      - name: CLIP method comparison (SE)
+        run: python tests/test_clip.py --event se --compare-methods
+
       - name: Check motif FASTA availability
         id: motif_fasta
         run: |
@@ -53,6 +56,10 @@ jobs:
       - name: Motif test (SE)
         if: steps.motif_fasta.outputs.available == 'true'
         run: python tests/test_motif.py --event se --fasta-root genomedata --genome hg19
+
+      - name: Motif method comparison (SE)
+        if: steps.motif_fasta.outputs.available == 'true'
+        run: python tests/test_motif.py --event se --fasta-root genomedata --genome hg19 --compare-methods
 
       - name: Motif test skipped
         if: steps.motif_fasta.outputs.available != 'true'

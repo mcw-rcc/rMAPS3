@@ -7,8 +7,10 @@ from typing import Dict
 import sys
 import subprocess
 import os
+import shutil
 
 from rmaps_core.input_utils import maybe_prepare_rmats_input
+from rmaps_core.stat_utils import normalize_stat_method
 
 
 PYTHON = sys.executable
@@ -79,11 +81,13 @@ def miso_converter_script(event: str) -> Path:
     return REPO_ROOT / EVENT_SPECS[key].miso_converter
 
 
-def run_subprocess(cmd: list[str]) -> int:
+def run_subprocess(cmd: list[str], env_overrides: dict[str, str] | None = None) -> int:
     """
     Shared helper for launching child processes from this project.
     """
     env = dict(os.environ)
+    if env_overrides:
+        env.update(env_overrides)
     repo_root = str(REPO_ROOT)
     existing = env.get("PYTHONPATH", "")
     env["PYTHONPATH"] = repo_root if not existing else f"{repo_root}{os.pathsep}{existing}"
@@ -111,6 +115,10 @@ def run_motif_map(
     sig_fdr: float,
     sig_delta_psi: float,
     separate: bool,
+    stat_method: str = "fisher",
+    stat_permutations: int | None = None,
+    stat_seed: int | None = None,
+    keep_temp: bool = False,
 ) -> int:
     """
     Build and run the legacy motifMap* script for a given event type.
@@ -119,6 +127,7 @@ def run_motif_map(
     can call a single entrypoint per event.
     """
     script_path = event_script(event)
+    stat_method = normalize_stat_method(stat_method)
     output = Path(output)
     rmats = maybe_prepare_rmats_input(rmats, output)
     cmd: list[str] = [
@@ -161,5 +170,18 @@ def run_motif_map(
     ]
     if separate:
         cmd.append("--separate")
-    return run_subprocess(cmd)
+
+    env_overrides = {"RMAPS_STAT_METHOD": stat_method}
+    if stat_permutations is not None:
+        env_overrides["RMAPS_STAT_PERMUTATIONS"] = str(stat_permutations)
+    if stat_seed is not None:
+        env_overrides["RMAPS_STAT_SEED"] = str(stat_seed)
+
+    code = run_subprocess(cmd, env_overrides)
+
+    # Keep temp data on failure for debugging; clean on success unless requested.
+    if code == 0 and not keep_temp:
+        shutil.rmtree(output / "temp", ignore_errors=True)
+
+    return code
 

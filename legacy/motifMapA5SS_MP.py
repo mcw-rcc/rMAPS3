@@ -1,8 +1,9 @@
-from pyx import *
+﻿from pyx import *
 import re, os, sys, logging, time, argparse, numpy, subprocess, shutil
 import glob
 import operator
 from scipy import stats
+import warnings
 import timeit
 import multiprocessing
 import pickle
@@ -10,6 +11,7 @@ import types
 
 from rmaps_core import drawutils
 from rmaps_core.genome_access import load_genome, fetch_seq as fetch_seq_from_fasta
+from rmaps_core.stat_utils import normalize_stat_method, pvalue_header_label
 
 def run_command(cmd):
     completed = subprocess.run(cmd, capture_output=True, text=True)
@@ -160,6 +162,15 @@ def setup_runtime():
                         action='store_const',
                         const=True)
     args = parser.parse_args()
+    stat_method = normalize_stat_method(os.environ.get('RMAPS_STAT_METHOD', 'fisher'))
+    try:
+        stat_permutations = max(50, int(os.environ.get('RMAPS_STAT_PERMUTATIONS', '500')))
+    except Exception:
+        stat_permutations = 500
+    try:
+        stat_seed = max(0, int(os.environ.get('RMAPS_STAT_SEED', '1337')))
+    except Exception:
+        stat_seed = 1337
 
 
     def listToString(x):  ## log command
@@ -1127,7 +1138,7 @@ def printCountDist(cdist, tName, tMotif):
         desFile.close()
 
 
-def computeWilcoxonP(cdist_one, cdist_two,
+def computePValues(cdist_one, cdist_two,
                      test_p):  ## count p value for one vs. two
     rName = {
         0: 'R1',
@@ -1139,20 +1150,49 @@ def computeWilcoxonP(cdist_one, cdist_two,
         6: 'R7',
         7: 'R8'
     }
+    rng = numpy.random.default_rng(stat_seed)
+
     for zz in range(8):  ## for 8 regions
         test_p[zz] = {}
         for locus in range(len(cdist_one[zz])):
-            test_p[zz][locus] = stats.fisher_exact(
-                [[
-                    sum(cdist_one[zz][locus]),
-                    max(0,
-                        len(cdist_one[zz][locus]) - sum(cdist_one[zz][locus]))
-                ],
-                 [
-                     sum(cdist_two[zz][locus]),
-                     max(0,
-                         len(cdist_two[zz][locus]) - sum(cdist_two[zz][locus]))
-                 ]], 'greater')[1]
+            first = cdist_one[zz][locus]
+            second = cdist_two[zz][locus]
+            try:
+                if stat_method == 'mannwhitney_greater':
+                    pvalue = float(stats.mannwhitneyu(first, second, alternative='greater')[1])
+                elif stat_method == 'brunnermunzel_greater':
+                    with warnings.catch_warnings():
+                        warnings.filterwarnings('ignore', category=RuntimeWarning, module=r'scipy\\.stats.*')
+                        pvalue = float(stats.brunnermunzel(first, second, alternative='greater', distribution='normal')[1])
+                elif stat_method == 'permutation_one_sided':
+                    first_arr = numpy.asarray(first, dtype=float)
+                    second_arr = numpy.asarray(second, dtype=float)
+                    n_first = first_arr.size
+                    observed = float(numpy.mean(first_arr) - numpy.mean(second_arr))
+                    pooled = numpy.concatenate([first_arr, second_arr])
+                    ge_count = 0
+                    for _ in range(stat_permutations):
+                        perm = rng.permutation(pooled)
+                        stat = float(numpy.mean(perm[:n_first]) - numpy.mean(perm[n_first:]))
+                        if stat >= observed:
+                            ge_count += 1
+                    pvalue = (ge_count + 1.0) / (stat_permutations + 1.0)
+                else:
+                    pvalue = float(stats.fisher_exact(
+                        [[
+                            sum(first),
+                            max(0, len(first) - sum(first))
+                        ],
+                         [
+                             sum(second),
+                             max(0, len(second) - sum(second))
+                         ]], 'greater')[1])
+            except Exception:
+                pvalue = 1.0
+
+            if not numpy.isfinite(pvalue):
+                pvalue = 1.0
+            test_p[zz][locus] = pvalue
     return test_p
 
 
@@ -1167,7 +1207,8 @@ def printPval(pdic, dFile, eNum):  ## print p values per position
         6: 'R7',
         7: 'R8'
     }
-    dFile.write('Region\tposition\twilcoxon.ranksum.pVal\n')
+    header = pvalue_header_label(stat_method)
+    dFile.write('Region\tposition\t' + header + '\n')
     if eNum == 0:  ## no exons in the group
         return
     for zz in range(8):  ## for 8 regions
@@ -1194,8 +1235,8 @@ def makeIndividualMaps(d, line):
     motifs = initMotif(tmpFile, mCount)
     cdist = countMotif(mCount, tName, tMotif, motifs)
     printCountDist(cdist, tName, tMotif)
-    test_up = computeWilcoxonP(cdist['up'], cdist['bg'], test_up1)
-    test_dn = computeWilcoxonP(cdist['dn'], cdist['bg'], test_dn1)
+    test_up = computePValues(cdist['up'], cdist['bg'], test_up1)
+    test_dn = computePValues(cdist['dn'], cdist['bg'], test_dn1)
     upbgPFile = open(
         tempPath + '/' + tName + '.' + tMotif + '.pVal.up.vs.bg.txt', 'w')
     dnbgPFile = open(
@@ -1222,6 +1263,9 @@ def wccount(filename):
 
 def minPvalueOut(exonType):
     global outPath
+
+    def bucket_min(values):
+        return min(values) if values else 1.0
 
     fileList = ""
     resultFile = ""
@@ -1275,9 +1319,9 @@ def minPvalueOut(exonType):
         pValR08Chunk.sort()
         fileName = fN.strip().split('/')[-1]
         pValList.append([
-            fileName[:-18], pValR01Chunk[0], pValR02Chunk[0], pValR03Chunk[0],
-            pValR04Chunk[0], pValR05Chunk[0], pValR06Chunk[0], pValR07Chunk[0],
-            pValR08Chunk[0]
+            fileName[:-18], bucket_min(pValR01Chunk), bucket_min(pValR02Chunk), bucket_min(pValR03Chunk),
+            bucket_min(pValR04Chunk), bucket_min(pValR05Chunk), bucket_min(pValR06Chunk), bucket_min(pValR07Chunk),
+            bucket_min(pValR08Chunk)
         ])
     pValList.sort(key=operator.itemgetter(2))
     fileOpen = open(outPath + "/" + resultFile, "w")
@@ -1466,4 +1510,5 @@ def main():
 if __name__ == "__main__":
     multiprocessing.freeze_support()
     main()
+
 

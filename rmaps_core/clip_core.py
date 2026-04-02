@@ -14,8 +14,10 @@ from typing import Dict
 import sys
 import subprocess
 import os
+import shutil
 
 from rmaps_core.input_utils import maybe_prepare_rmats_input
+from rmaps_core.stat_utils import normalize_stat_method
 
 
 PYTHON = sys.executable
@@ -86,7 +88,7 @@ def clip_event_script(event: str) -> Path:
     return REPO_ROOT / CLIP_EVENT_SPECS[key].script
 
 
-def run_subprocess(cmd: list[str]) -> int:
+def run_subprocess(cmd: list[str], env_overrides: dict[str, str] | None = None) -> int:
     """
     Shared helper for launching child processes from this project.
 
@@ -97,6 +99,8 @@ def run_subprocess(cmd: list[str]) -> int:
         Return code from the subprocess
     """
     env = dict(os.environ)
+    if env_overrides:
+        env.update(env_overrides)
     repo_root = str(REPO_ROOT)
     existing = env.get("PYTHONPATH", "")
     env["PYTHONPATH"] = repo_root if not existing else f"{repo_root}{os.pathsep}{existing}"
@@ -121,6 +125,10 @@ def run_clip_map(
     sig_fdr: float,
     sig_delta_psi: float,
     separate: bool,
+    stat_method: str = "fisher",
+    stat_permutations: int | None = None,
+    stat_seed: int | None = None,
+    keep_temp: bool = False,
 ) -> int:
     """
     Run CLIP-seq RNA map analysis for the specified event type.
@@ -147,6 +155,7 @@ def run_clip_map(
         Return code from the subprocess
     """
     script = clip_event_script(event)
+    stat_method = normalize_stat_method(stat_method)
     output = Path(output)
     rmats = maybe_prepare_rmats_input(rmats, output)
 
@@ -172,7 +181,19 @@ def run_clip_map(
     if separate:
         cmd.append("--separate")
 
-    return run_subprocess(cmd)
+    env_overrides = {"RMAPS_STAT_METHOD": stat_method}
+    if stat_permutations is not None:
+        env_overrides["RMAPS_STAT_PERMUTATIONS"] = str(stat_permutations)
+    if stat_seed is not None:
+        env_overrides["RMAPS_STAT_SEED"] = str(stat_seed)
+
+    code = run_subprocess(cmd, env_overrides)
+
+    # Keep temp data on failure for debugging; clean on success unless requested.
+    if code == 0 and not keep_temp:
+        shutil.rmtree(output / "temp", ignore_errors=True)
+
+    return code
 
 
 def get_event_description(event: str) -> str:

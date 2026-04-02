@@ -14,6 +14,7 @@ import sys
 from pathlib import Path
 from datetime import datetime
 
+
 # Motif event type configurations.
 # Uses bundled event-specific rMATS files under data/test/clip/.
 MOTIF_EVENTS = {
@@ -53,6 +54,12 @@ COMMON_PARAMS = {
     "down": "NA",
     "background": "NA",
 }
+
+DEFAULT_COMPARE_METHODS = [
+    "fisher",
+    "mannwhitney_greater",
+    "brunnermunzel_greater",
+]
 
 
 def run_motif_test(event_type, config, fasta_root, verbose=False):
@@ -101,10 +108,86 @@ def run_motif_test(event_type, config, fasta_root, verbose=False):
         if result.stdout:
             print(f"Output: {result.stdout}")
         return False
-
     except Exception as e:
         print(f"FAIL with exception: {e}")
         return False
+
+
+def count_significant_windows(pval_file: Path, threshold: float = 0.05) -> int:
+    if not pval_file.exists():
+        return -1
+    count = 0
+    with pval_file.open("r", encoding="utf-8", errors="replace") as handle:
+        next(handle, None)
+        for line in handle:
+            parts = line.strip().split("\t")
+            if len(parts) < 3:
+                continue
+            try:
+                if float(parts[2]) < threshold:
+                    count += 1
+            except ValueError:
+                continue
+    return count
+
+
+def run_motif_method_compare(event_type, config, fasta_root, methods, verbose=False):
+    print(f"\n{'='*70}")
+    print(f"Comparing Motif methods: {config['name']}")
+    print(f"{'='*70}")
+
+    base_out = Path(config["output"])
+    method_outputs = {method: f"{base_out}_{method}" for method in methods}
+
+    for method, out_dir in method_outputs.items():
+        cmd = [
+            sys.executable, "cli.py", "motif-map", event_type,
+            "--known-motifs", COMMON_PARAMS["known_motifs"],
+            "--motifs", COMMON_PARAMS["motifs"],
+            "--fasta-root", fasta_root,
+            "--genome", COMMON_PARAMS["genome"],
+            "--output", out_dir,
+            "--rMATS", config["rMATS"],
+            "--miso", COMMON_PARAMS["miso"],
+            "--up", COMMON_PARAMS["up"],
+            "--down", COMMON_PARAMS["down"],
+            "--background", COMMON_PARAMS["background"],
+            "--stat-method", method,
+        ]
+        if method == "permutation_one_sided":
+            cmd.extend(["--stat-permutations", "200", "--stat-seed", "1337"])
+        if verbose:
+            print(f"Command: {' '.join(cmd)}")
+        result = subprocess.run(
+            cmd,
+            capture_output=True,
+            text=True,
+            cwd=Path(__file__).parent.parent,
+        )
+        if result.returncode != 0:
+            print(f"FAIL ({method}) exit code {result.returncode}")
+            if result.stderr:
+                print(result.stderr)
+            return False
+
+    summary = []
+    for method, out_dir in method_outputs.items():
+        up_file = Path(out_dir) / "pVal.up.vs.bg.RNAmap.txt"
+        dn_file = Path(out_dir) / "pVal.dn.vs.bg.RNAmap.txt"
+        up_sig = count_significant_windows(up_file)
+        dn_sig = count_significant_windows(dn_file)
+        if min(up_sig, dn_sig) < 0:
+            print(f"FAIL (missing motif p-value files for method={method})")
+            return False
+        summary.append(
+            (method, up_sig, dn_sig)
+        )
+
+    for method, up_sig, dn_sig in summary:
+        print(f"Significant windows (p<0.05): method={method}, up={up_sig}, dn={dn_sig}")
+
+    print("PASS method comparison")
+    return True
 
 
 def list_events():
@@ -156,7 +239,16 @@ Examples:
         default="hg19",
         help="Genome build to use (default: hg19)",
     )
-
+    parser.add_argument(
+        "--compare-methods",
+        action="store_true",
+        help="Run selected method set and verify all method paths produce valid outputs.",
+    )
+    parser.add_argument(
+        "--include-permutation",
+        action="store_true",
+        help="Include permutation_one_sided in --compare-methods runs (slower).",
+    )
     args = parser.parse_args()
 
     if args.list:
@@ -165,6 +257,9 @@ Examples:
 
     COMMON_PARAMS["genome"] = args.genome
     events_to_test = args.event if args.event else list(MOTIF_EVENTS.keys())
+    compare_methods = list(DEFAULT_COMPARE_METHODS)
+    if args.include_permutation:
+        compare_methods.append("permutation_one_sided")
 
     print("\n" + "=" * 70)
     print("MOTIF MAP TEST SUITE")
@@ -177,7 +272,10 @@ Examples:
     results = {}
     for event_type in events_to_test:
         config = MOTIF_EVENTS[event_type]
-        success = run_motif_test(event_type, config, args.fasta_root, args.verbose)
+        if args.compare_methods:
+            success = run_motif_method_compare(event_type, config, args.fasta_root, compare_methods, args.verbose)
+        else:
+            success = run_motif_test(event_type, config, args.fasta_root, args.verbose)
         results[event_type] = success
 
     print("\n" + "=" * 70)

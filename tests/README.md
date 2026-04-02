@@ -1,9 +1,12 @@
 ﻿# Testing Guide
 
-Two unified scripts cover routine testing:
+Three scripts cover routine testing:
 
 - `tests/test_clip.py`
 - `tests/test_motif.py`
+- `tests/smoke_cli.py`
+
+`tests/test_clip.py` and `tests/test_motif.py` both support `--compare-methods` for checking method-specific outputs. Use `--include-permutation` only when you want the slower permutation path included.
 
 ## Quick Start
 
@@ -27,6 +30,7 @@ Usage:
 ```bash
 python tests/test_clip.py
 python tests/test_clip.py --event se a5ss
+python tests/test_clip.py --event se --compare-methods
 python tests/test_clip.py --verbose
 python tests/test_clip.py --list
 ```
@@ -48,10 +52,23 @@ Usage:
 ```bash
 python tests/test_motif.py
 python tests/test_motif.py --event se a3ss
+python tests/test_motif.py --event se --compare-methods --fasta-root genomedata --genome hg19
 python tests/test_motif.py --fasta-root genomedata --genome hg19
 python tests/test_motif.py --verbose
 python tests/test_motif.py --list
 ```
+
+## Smoke CLI Suite
+
+Script: `tests/smoke_cli.py`
+
+Usage:
+
+```bash
+python tests/smoke_cli.py
+```
+
+Coverage includes top-level and event-level help commands, including `--stat-method` option visibility for motif and clip SE subcommands.
 
 Event types: same set as CLIP test suite (`se`, `a5ss`, `a3ss`, `mxe`, `ri`).
 
