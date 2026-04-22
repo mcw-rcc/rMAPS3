@@ -1,4 +1,4 @@
-﻿# rMAPS 3
+﻿# rMAPS3
 
 ![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue)
 ![Tests](https://github.com/abdelrahmanvxn/rMAPS-3/workflows/CI/badge.svg)
