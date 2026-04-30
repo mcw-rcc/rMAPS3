@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """
 Lightweight smoke-test helpers for the rMAPS 3 project.
 
