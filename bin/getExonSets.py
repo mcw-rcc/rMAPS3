@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 #
 ## this program gets the rMATS + cuffdiff output to make upregulated, downregulated, and background SE events
 #
@@ -18,7 +19,6 @@ def listToString(x):
   for a in x:
     rVal += a+' ';
   return rVal;
-
 
 ### setting up the logging format 
 logging.basicConfig(level=logging.DEBUG,

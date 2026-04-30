@@ -1,12 +1,10 @@
+#!/usr/bin/env python3
 import sys
 from pathlib import Path
-
 import typer
-
 from rmaps_core.motif_map_core import miso_converter_script, run_subprocess, run_motif_map
 from rmaps_core.clip_core import run_clip_map
 from rmaps_core.stat_utils import supported_stat_methods
-
 
 app = typer.Typer(help="RNA motif maps, CLIP maps, and exon set utilities")
 
@@ -52,7 +50,6 @@ KEEP_TEMP_OPTION = typer.Option(
     help="Keep output/temp on successful runs (temp is always kept on failures).",
 )
 
-
 def run_cmd(cmd: list[str]) -> None:
     """
     Run a subprocess in the repository root and exit with its return code.
@@ -60,12 +57,9 @@ def run_cmd(cmd: list[str]) -> None:
     code = run_subprocess(cmd)
     raise typer.Exit(code=code)
 
-
 #
 # motif-map subcommands
 #
-
-
 @motif_app.command("se")
 def motif_map_se(
     known_motifs: Path = typer.Option(
@@ -441,12 +435,9 @@ def motif_map_mxe(
     )
     raise typer.Exit(code=code)
 
-
 #
 # clip-map subcommands
 #
-
-
 @clip_app.command("se")
 def clip_map_se(
     peak: Path = typer.Option(..., "--peak", "-p", help="CLIP-seq peak file"),
@@ -493,7 +484,6 @@ def clip_map_se(
         keep_temp=keep_temp,
     )
     raise typer.Exit(code=code)
-
 
 @clip_app.command("a3ss")
 def clip_map_a3ss(
@@ -542,7 +532,6 @@ def clip_map_a3ss(
     )
     raise typer.Exit(code=code)
 
-
 @clip_app.command("a5ss")
 def clip_map_a5ss(
     peak: Path = typer.Option(..., "--peak", "-p", help="CLIP-seq peak file"),
@@ -589,7 +578,6 @@ def clip_map_a5ss(
         keep_temp=keep_temp,
     )
     raise typer.Exit(code=code)
-
 
 @clip_app.command("ri")
 def clip_map_ri(
@@ -638,7 +626,6 @@ def clip_map_ri(
     )
     raise typer.Exit(code=code)
 
-
 @clip_app.command("mxe")
 def clip_map_mxe(
     peak: Path = typer.Option(..., "--peak", "-p", help="CLIP-seq peak file"),
@@ -686,12 +673,9 @@ def clip_map_mxe(
     )
     raise typer.Exit(code=code)
 
-
 #
 # convert subcommands
 #
-
-
 @convert_app.command("miso")
 def convert_miso(
     event: str = typer.Option(
@@ -724,12 +708,9 @@ def convert_miso(
     ]
     run_cmd(cmd)
 
-
 #
 # exon-sets subcommands
 #
-
-
 @exon_app.command("se")
 def exon_sets_se(
     input_file: Path = typer.Option(
@@ -755,7 +736,5 @@ def exon_sets_se(
     ]
     run_cmd(cmd)
 
-
 if __name__ == "__main__":
     app()
-
