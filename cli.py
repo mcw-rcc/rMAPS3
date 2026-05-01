@@ -18,7 +18,6 @@ app.add_typer(clip_app, name="clip-map")
 app.add_typer(convert_app, name="convert")
 app.add_typer(exon_app, name="exon-sets")
 
-#REPO_ROOT = Path(__file__).resolve().parent
 PYTHON = sys.executable
 
 SUPPORTED_STAT_METHODS = ", ".join(supported_stat_methods())
