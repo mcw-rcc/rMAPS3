@@ -16,8 +16,6 @@ from rmaps_core.drawutils import export_canvas_outputs
 from rmaps_core.stat_utils import compute_locus_pvalue, normalize_stat_method, pvalue_header_label
 
 #import fisher,mne;  ## for FDR calculation
-#
-#
 
 ### checking out the number of arguments
 if (len(sys.argv) < 14):
@@ -996,10 +994,6 @@ def plotRegions(
     elif howmany == 2:
         return pvalup, pvaldn
 
-
-#
-
-
 def fillUpPath(tPoints):
     rPath = path.path(path.moveto(tPoints[0][0], tPoints[0][1]))
     for pp in range(1, len(tPoints)):  ## for each point from the 2nd element
@@ -1135,7 +1129,6 @@ def drawAcutalPlot(
     c.stroke(path_pdn, [dnColor, ldash, p_transform])
 
     logging.debug("Done drawing acutal plots")
-
 
 def drawMap(
     upc,
