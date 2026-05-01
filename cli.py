@@ -18,7 +18,7 @@ app.add_typer(clip_app, name="clip-map")
 app.add_typer(convert_app, name="convert")
 app.add_typer(exon_app, name="exon-sets")
 
-REPO_ROOT = Path(__file__).resolve().parent
+#REPO_ROOT = Path(__file__).resolve().parent
 PYTHON = sys.executable
 
 SUPPORTED_STAT_METHODS = ", ".join(supported_stat_methods())
@@ -56,6 +56,27 @@ def run_cmd(cmd: list[str]) -> None:
     """
     code = run_subprocess(cmd)
     raise typer.Exit(code=code)
+
+#
+# The entry point of the CLI
+#
+@app.callback()
+def main(
+    repo_root: Path = typer.Option(
+        ...,
+        "--repo-root",
+        help="Path to the rMAPS3 repository root",
+        exists=True,
+        file_okay=False,
+        dir_okay=True,
+        resolve_path=True,
+    )
+):
+    """
+    RNA motif maps, CLIP maps, and exon set utilities
+    """
+    global REPO_ROOT
+    REPO_ROOT = repo_root
 
 #
 # motif-map subcommands
