@@ -10,13 +10,15 @@ from datetime import datetime
 from pathlib import Path
 from threading import Lock
 from typing import Any
-
 from flask import Flask, jsonify, render_template, request
+
+from rmaps_core.config import get_repo_root
 
 try:
     from rmaps_core.motif_map_core import EVENT_SPECS, run_motif_map
     from rmaps_core.clip_core import CLIP_EVENT_SPECS, run_clip_map
     from rmaps_core.stat_utils import normalize_stat_method
+
 except ModuleNotFoundError:
     # Allow running `python webui/app.py` directly.
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
@@ -46,10 +48,8 @@ SUPPORTED_GENOMES = {
     "xenTro9": {"organism": "Xenopus tropicalis", "default": False},
 }
 
-
 def _repo_root() -> Path:
-    return Path(__file__).resolve().parents[1]
-
+    return get_repo_root()
 
 def _parse_rnamap_min_pvals(path: Path) -> dict[str, float]:
     agg: dict[str, float] = {}
@@ -160,15 +160,12 @@ def _important_log_lines(lines: list[str]) -> list[str]:
         keep.append(f"[summary] suppressed {suppressed['native_png_failed'] - 1} repeated PNG-export warnings")
     return keep
 
-
 def _normalize_event(value: str) -> str:
     return value.strip().lower()
-
 
 def _normalize_analysis_type(value: str) -> str:
     v = (value or "").strip().lower()
     return "clip" if v == "clip" else "motif"
-
 
 def _create_job_dir(base: Path, prefix: str = "") -> Path:
     job_id = str(uuid.uuid4())[:8]
@@ -176,7 +173,6 @@ def _create_job_dir(base: Path, prefix: str = "") -> Path:
     path = base / name
     path.mkdir(parents=True, exist_ok=True)
     return path
-
 
 def create_app() -> Flask:
     app = Flask(
@@ -202,7 +198,6 @@ def create_app() -> Flask:
 
     register_routes(app)
     return app
-
 
 def register_routes(app: Flask) -> None:
     def resolve_job(job_id: str) -> dict[str, Any] | None:

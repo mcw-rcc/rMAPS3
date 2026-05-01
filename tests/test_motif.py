@@ -14,7 +14,6 @@ import sys
 from pathlib import Path
 from datetime import datetime
 
-
 # Motif event type configurations.
 # Uses bundled event-specific rMATS files under data/test/clip/.
 MOTIF_EVENTS = {
@@ -60,7 +59,6 @@ DEFAULT_COMPARE_METHODS = [
     "mannwhitney_greater",
     "brunnermunzel_greater",
 ]
-
 
 def run_motif_test(event_type, config, fasta_root, verbose=False):
     """Run motif-map test for a specific event type."""

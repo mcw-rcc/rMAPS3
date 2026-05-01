@@ -45,7 +45,6 @@ def _mean_psi_field(field):
         return None
     return sum(values) / float(len(values))
 
-
 def setup_runtime():
     parser = argparse.ArgumentParser(
         description=

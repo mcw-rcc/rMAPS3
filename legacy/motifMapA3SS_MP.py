@@ -19,7 +19,6 @@ def run_command(cmd):
     output = (completed.stdout or "") + (completed.stderr or "")
     return status, output
 
-
 def copy_file(src, dst):
     try:
         shutil.copy2(src, dst)
@@ -44,7 +43,6 @@ def _mean_psi_field(field):
     if not values:
         return None
     return sum(values) / float(len(values))
-
 
 def setup_runtime():
     parser = argparse.ArgumentParser(

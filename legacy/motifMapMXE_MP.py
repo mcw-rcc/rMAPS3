@@ -19,7 +19,6 @@ def run_command(cmd):
     output = (completed.stdout or "") + (completed.stderr or "")
     return status, output
 
-
 def copy_file(src, dst):
     try:
         shutil.copy2(src, dst)
@@ -27,13 +26,11 @@ def copy_file(src, dst):
     except Exception as exc:
         return 1, str(exc)
 
-
 def _safe_float(value):
     try:
         return float(value)
     except (TypeError, ValueError):
         return None
-
 
 def _mean_psi_field(field):
     values = []
@@ -44,7 +41,6 @@ def _mean_psi_field(field):
     if not values:
         return None
     return sum(values) / float(len(values))
-
 
 def setup_runtime():
     parser = argparse.ArgumentParser(
@@ -426,7 +422,6 @@ def makeInputFiles(
 
     logging.debug("Done making input file from rMATS")
 
-
 def getFasta(t):  ## get fasta for the given exon group
 
     logging.debug("Making fasta files for: %s" % t)
@@ -475,11 +470,9 @@ def getFasta(t):  ## get fasta for the given exon group
 
     logging.debug("Done making fasta files for: %s" % t)
 
-
 def findAll(re_motif, s_seq):
     return [[m.start(0), m.end(0)] for m in re.finditer(re_motif, s_seq)
             ], [m.start(0) for m in re.finditer(re_motif, s_seq)]
-
 
 def initMotif(mF, mc):  ## initialize motif counts
     global motifs
@@ -490,7 +483,6 @@ def initMotif(mF, mc):  ## initialize motif counts
         motifs.append(line.strip().split('\t')[1])
     logging.debug("The number of motifs: %d" % len(motifs))
     return motifs
-
 
 def countMotif(mc, ttName, ttMotif,
                motifs):  ## counting motifs, motif name, motif reg expression
@@ -628,7 +620,6 @@ def countMotif(mc, ttName, ttMotif,
                 exonNum += 1
             fFile.close()
     return cdist
-
 
 def drawNode(c, eH, eW, iW, indent, gap, sGap, scale):  ## draw node
 

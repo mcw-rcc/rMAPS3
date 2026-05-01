@@ -6,7 +6,6 @@ across all 5 alternative splicing event types (SE, A3SS, A5SS, RI, MXE).
 """
 
 from __future__ import annotations
-
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict
@@ -18,11 +17,10 @@ import shutil
 
 from rmaps_core.input_utils import maybe_prepare_rmats_input
 from rmaps_core.stat_utils import normalize_stat_method
-
+from rmaps_core.config import get_repo_root
 
 PYTHON = sys.executable
-REPO_ROOT = Path(__file__).resolve().parents[1]
-
+REPO_ROOT = get_repo_root()
 
 @dataclass(frozen=True)
 class ClipEventSpec:

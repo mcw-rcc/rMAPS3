@@ -2,19 +2,23 @@
 #
 ## this program generates RNA Map using CLIP-seq and set of exons
 #
+
 ### import necessary libraries
 import re, os, sys, logging, time, datetime, csv, subprocess, numpy, traceback
 from math import ceil
 from pyx import *
+
 ## for making plot
 from scipy import stats
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from rmaps_core.drawutils import export_canvas_outputs
 from rmaps_core.stat_utils import compute_locus_pvalue, normalize_stat_method, pvalue_header_label
+
 #import fisher,mne;  ## for FDR calculation
 #
 #
+
 ### checking out the number of arguments
 if (len(sys.argv) < 14):
     print('Not enough arguments!!')
@@ -115,7 +119,6 @@ test_dn = {}
 #
 ###########################################
 
-
 #
 ### functions here.. ##########
 #
@@ -150,7 +153,6 @@ def readPeaks(pF):  ### read peaks and height
     logging.debug("Done populating peaks dictionary with %d items" %
                   totalPeaks)
 
-
 def getExons(eFile, edic):
     line = eFile.readline()
     ## header
@@ -162,7 +164,6 @@ def getExons(eFile, edic):
         ]
     logging.debug("getExons function populated dictionary with %d items" %
                   len(edic))
-
 
 def read_OS_File(
 ):  ## read Order Statistics output. find up, down, background exons
@@ -337,7 +338,6 @@ def processExons(exons,
     return rVal
     ## list with total count for each region
 
-
 def computePValues(cdist_one, cdist_two,
                      test_p):  ## count p value for one vs. two
     rName = {
@@ -360,7 +360,6 @@ def computePValues(cdist_one, cdist_two,
                 stat_method,
                 fisher_scale=myFactor,
             )
-
 
 def printCountDist(
     cds, desFile, exNum
@@ -385,7 +384,6 @@ def printCountDist(
             desFile.write(','.join([str(ccc)
                                     for ccc in cds[zz][locus]]) + ']\n')
 
-
 def printPval(pdic, dFile, eNum):  ## print p values per position
     rName = {
         0: 'R1',
@@ -405,7 +403,6 @@ def printPval(pdic, dFile, eNum):  ## print p values per position
         for locus in range(len(pdic[zz])):
             dFile.write(rName[zz] + '\t' + str(locus) + '\t' +
                         str(pdic[zz][locus]) + '\n')
-
 
 def printCounts(
     counts, dFile, eNum
@@ -432,7 +429,6 @@ def printCounts(
                 str(float(counts[zz][ind]) / float(eNum))
             ]) + '\n')
         #dFile.write('\n');
-
 
 def printCombinedCounts(upc, dnc, bgc, destFile, uNum, dNum,
                         bNum):  ## print combined counts
@@ -472,7 +468,6 @@ def printCombinedCounts(upc, dnc, bgc, destFile, uNum, dNum,
             ])
             destFile.write(outString + '\n')
         #dFile.write('\n');
-
 
 def drawNode(c, eH, eW, iW, indent, gap, sGap, scale):  ## draw node
 
@@ -515,7 +510,6 @@ def drawNode(c, eH, eW, iW, indent, gap, sGap, scale):  ## draw node
     c.stroke(FlankingExon, [mls, deco.filled([color.gray(0.8)])])
 
     logging.debug("Done drawing node structure")
-
 
 def drawBox(c,
             mpv,

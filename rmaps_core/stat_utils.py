@@ -9,7 +9,6 @@ from typing import Sequence
 import numpy as np
 from scipy import stats
 
-
 METHOD_ALIASES = {
     "fisher": "fisher",
     "mannwhitney": "mannwhitney_greater",
@@ -27,7 +26,6 @@ METHOD_HEADERS = {
     "permutation_one_sided": "permutation.oneSided.pVal",
 }
 
-
 def supported_stat_methods() -> tuple[str, ...]:
     return (
         "fisher",
@@ -36,16 +34,13 @@ def supported_stat_methods() -> tuple[str, ...]:
         "permutation_one_sided",
     )
 
-
 def normalize_stat_method(stat_method: str | None) -> str:
     method = (stat_method or "fisher").strip().lower()
     return METHOD_ALIASES.get(method, "fisher")
 
-
 def pvalue_header_label(stat_method: str | None) -> str:
     method = normalize_stat_method(stat_method)
     return METHOD_HEADERS.get(method, METHOD_HEADERS["fisher"])
-
 
 def _fisher_greater_pvalue(values_one: Sequence[float], values_two: Sequence[float], fisher_scale: float) -> float:
     scale = fisher_scale if fisher_scale and fisher_scale > 0 else 1.0
@@ -57,10 +52,8 @@ def _fisher_greater_pvalue(values_one: Sequence[float], values_two: Sequence[flo
 
     return float(stats.fisher_exact([[succ1, fail1], [succ2, fail2]], "greater")[1])
 
-
 def _mannwhitney_greater_pvalue(values_one: Sequence[float], values_two: Sequence[float]) -> float:
     return float(stats.mannwhitneyu(values_one, values_two, alternative="greater")[1])
-
 
 def _brunnermunzel_greater_pvalue(values_one: Sequence[float], values_two: Sequence[float]) -> float:
     if len(values_one) < 2 or len(values_two) < 2:
@@ -88,10 +81,8 @@ def _brunnermunzel_greater_pvalue(values_one: Sequence[float], values_two: Seque
             return 1.0
     return float(pvalue)
 
-
 def _sanitize_values(values: Sequence[float]) -> list[float]:
     return [float(v) for v in values if np.isfinite(v)]
-
 
 def _int_from_env(name: str, default: int, minimum: int) -> int:
     raw = os.environ.get(name)
@@ -109,7 +100,6 @@ def _permutation_config() -> tuple[int, int]:
     n_permutations = _int_from_env("RMAPS_STAT_PERMUTATIONS", default=500, minimum=50)
     seed = _int_from_env("RMAPS_STAT_SEED", default=1337, minimum=0)
     return n_permutations, seed
-
 
 def _permutation_one_sided_pvalue(values_one: Sequence[float], values_two: Sequence[float]) -> float:
     n_permutations, seed = _permutation_config()
@@ -133,7 +123,6 @@ def _permutation_one_sided_pvalue(values_one: Sequence[float], values_two: Seque
 
     return (at_least_observed + 1.0) / (n_permutations + 1.0)
 
-
 def _clamp_pvalue(pvalue: float) -> float:
     if not np.isfinite(pvalue):
         return 1.0
@@ -142,7 +131,6 @@ def _clamp_pvalue(pvalue: float) -> float:
     if pvalue > 1.0:
         return 1.0
     return float(pvalue)
-
 
 def compute_locus_pvalue(
     values_one: Sequence[float],

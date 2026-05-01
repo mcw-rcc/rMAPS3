@@ -22,7 +22,6 @@ from rmaps_core.clip_utils import (
     convert_miso_to_rmats
 )
 
-
 def main():
     """Main execution function for A3SS CLIP-seq analysis."""
     

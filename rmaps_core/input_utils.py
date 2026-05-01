@@ -6,9 +6,7 @@ import zipfile
 from pathlib import Path
 from xml.etree import ElementTree as ET
 
-
 _NS = {"a": "http://schemas.openxmlformats.org/spreadsheetml/2006/main"}
-
 
 def _excel_col_to_idx(col_ref: str) -> int:
     value = 0

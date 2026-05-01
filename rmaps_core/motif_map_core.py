@@ -11,11 +11,10 @@ import shutil
 
 from rmaps_core.input_utils import maybe_prepare_rmats_input
 from rmaps_core.stat_utils import normalize_stat_method
-
+from rmaps_core.config import get_repo_root
 
 PYTHON = sys.executable
-REPO_ROOT = Path(__file__).resolve().parents[1]
-
+REPO_ROOT = get_repo_root()
 
 @dataclass(frozen=True)
 class EventSpec:
@@ -30,7 +29,6 @@ class EventSpec:
     name: str
     script: str
     miso_converter: str
-
 
 EVENT_SPECS: Dict[str, EventSpec] = {
     "se": EventSpec(
@@ -60,7 +58,6 @@ EVENT_SPECS: Dict[str, EventSpec] = {
     ),
 }
 
-
 def event_script(event: str) -> Path:
     """
     Return the path to the motifMap script for the given event (se, a3ss, a5ss, ri, mxe).
@@ -80,7 +77,6 @@ def miso_converter_script(event: str) -> Path:
         raise ValueError(f"Unsupported event type: {event}")
     return REPO_ROOT / EVENT_SPECS[key].miso_converter
 
-
 def run_subprocess(cmd: list[str], env_overrides: dict[str, str] | None = None) -> int:
     """
     Shared helper for launching child processes from this project.
@@ -93,7 +89,6 @@ def run_subprocess(cmd: list[str], env_overrides: dict[str, str] | None = None) 
     env["PYTHONPATH"] = repo_root if not existing else f"{repo_root}{os.pathsep}{existing}"
     result = subprocess.run(cmd, cwd=REPO_ROOT, env=env)
     return result.returncode
-
 
 def run_motif_map(
     event: str,
@@ -184,4 +179,3 @@ def run_motif_map(
         shutil.rmtree(output / "temp", ignore_errors=True)
 
     return code
-

@@ -5,6 +5,7 @@ import typer
 from rmaps_core.motif_map_core import miso_converter_script, run_subprocess, run_motif_map
 from rmaps_core.clip_core import run_clip_map
 from rmaps_core.stat_utils import supported_stat_methods
+import os
 
 app = typer.Typer(help="RNA motif maps, CLIP maps, and exon set utilities")
 
@@ -71,11 +72,9 @@ def main(
         resolve_path=True,
     )
 ):
-    """
-    RNA motif maps, CLIP maps, and exon set utilities
-    """
     global REPO_ROOT
     REPO_ROOT = repo_root
+    os.environ["RMAPS3_REPO_ROOT"] = str(repo_root)
 
 #
 # motif-map subcommands
@@ -215,7 +214,6 @@ def motif_map_se(
         keep_temp=keep_temp,
     )
     raise typer.Exit(code=code)
-
 
 @motif_app.command("a3ss")
 def motif_map_a3ss(

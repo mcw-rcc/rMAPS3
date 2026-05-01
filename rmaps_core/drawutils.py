@@ -6,7 +6,6 @@ from pyx import *
 pdfium = None
 Image = None
 
-
 def boxes(xS, width, scale, boxY, box_height, splice_offset):
     xE = xS + width
     rect = path.rect(xS * scale, boxY * scale, width * scale,
@@ -22,7 +21,6 @@ def boxes(xS, width, scale, boxY, box_height, splice_offset):
     r_ss = path.line((xS + splice_offset) * scale, boxY * scale,
                      (xS + splice_offset) * scale, (boxY + box_height) * scale)
     return rect, r_line, r_ss
-
 
 def title_and_legend(c, scale, xE, divider_gap, boxY, box_height, exon_width,
                      intron_width, map_name, nu, nd, nb):

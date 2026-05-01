@@ -1,15 +1,11 @@
 from pathlib import Path
 from functools import lru_cache
-
 from pyfaidx import Fasta
-
 
 _RC_TABLE = str.maketrans("ACGTNacgtn", "TGCANtgcan")
 
-
 def revcomp(seq: str) -> str:
     return seq.translate(_RC_TABLE)[::-1]
-
 
 @lru_cache(maxsize=None)
 def load_genome(build: str, base_dir: str) -> Fasta:

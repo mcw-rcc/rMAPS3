@@ -17,7 +17,6 @@ from rmaps_core.clip_utils import (
     setup_logging, copy_file, process_rmats_file, convert_miso_to_rmats
 )
 
-
 def main():
     parser = argparse.ArgumentParser(description='CLIP-seq RNA map for MXE events')
     parser.add_argument('-p', '--peak', dest='peakFile', required=True, help='CLIP-seq peaks')

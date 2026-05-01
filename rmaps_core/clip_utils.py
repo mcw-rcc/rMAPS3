@@ -13,14 +13,12 @@ import logging
 from pathlib import Path
 from typing import Dict, Tuple, Optional
 
-
 def _safe_float(value: str) -> float:
     """Parse numeric strings while tolerating NA-like values."""
     try:
         return float(value)
     except (TypeError, ValueError):
         return float("nan")
-
 
 def _mean_psi_field(field: str) -> float:
     """Return mean PSI for a comma-delimited field while skipping non-numeric tokens."""
@@ -32,7 +30,6 @@ def _mean_psi_field(field: str) -> float:
     if not values:
         return float("nan")
     return sum(values) / float(len(values))
-
 
 def setup_logging(output_path: Path, version: str = "3.0.0") -> None:
     """
@@ -50,7 +47,6 @@ def setup_logging(output_path: Path, version: str = "3.0.0") -> None:
         filemode='w'
     )
     logging.debug('Version: %s', version)
-
 
 def run_perl_command(cmd: str) -> Tuple[int, str]:
     """
@@ -76,7 +72,6 @@ def run_perl_command(cmd: str) -> Tuple[int, str]:
     except Exception as e:
         return -1, str(e)
 
-
 def copy_file(src: str, dest: str) -> Tuple[int, str]:
     """
     Copy a file from source to destination.
@@ -95,7 +90,6 @@ def copy_file(src: str, dest: str) -> Tuple[int, str]:
         return 0, f"Successfully copied {src} to {dest}"
     except Exception as e:
         return 1, f"Error copying file: {str(e)}"
-
 
 def parse_rMATS_line(
     line: str,
@@ -169,7 +163,6 @@ def parse_rMATS_line(
     
     return None
 
-
 def deduplicate_events(
     up: Dict[str, list],
     down: Dict[str, list],
@@ -203,7 +196,6 @@ def deduplicate_events(
             down[key][0] += 1
     
     return up, down, bg
-
 
 def write_coordinate_files(
     up: Dict[str, list],
@@ -251,7 +243,6 @@ def write_coordinate_files(
                 b_file.write(bg[key][1] + '\n')
     
     return nu, nd, nb
-
 
 def process_rmats_file(
     rmats_path: str,
@@ -352,7 +343,6 @@ def process_rmats_file(
     logging.debug("Number of background exons: %d", nb)
     
     return nu, nd, nb
-
 
 def convert_miso_to_rmats(
     miso_path: str,
