@@ -1,7 +1,5 @@
 use strict;
 
-
-
 sub parseIsoforms { 
   my($iso) = @_;
   my @wds = split(/\@/, $iso);
@@ -24,14 +22,10 @@ sub parseIsoforms {
   my $flankingES = $wds2[1];
   my $flankingEE   = $wds2[2];
 
-  
-
-
   my @retArr = ($longExonStart_0base, $longExonEnd, $shortES, $shortEE, 
                 $flankingES, $flankingEE);
   return(@retArr);
 }
-
 
 sub parseAssignedCounts {
    my ($ac) = @_;

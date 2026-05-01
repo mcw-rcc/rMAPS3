@@ -67,7 +67,6 @@ def event_script(event: str) -> Path:
         raise ValueError(f"Unsupported event type: {event}")
     return REPO_ROOT / EVENT_SPECS[key].script
 
-
 def miso_converter_script(event: str) -> Path:
     """
     Return the path to the Perl miso2rMATS converter for the given event.
@@ -126,42 +125,24 @@ def run_motif_map(
     output = Path(output)
     rmats = maybe_prepare_rmats_input(rmats, output)
     cmd: list[str] = [
-        PYTHON,
-        str(script_path),
-        "-k",
-        str(known_motifs),
-        "-m",
-        motifs,
-        "--fasta-root",
-        str(fasta_root),
-        "-g",
-        genome,
-        "-o",
-        str(output),
-        "-r",
-        rmats,
-        "-mi",
-        miso,
-        "-u",
-        up,
-        "-d",
-        down,
-        "-b",
-        background,
-        "--label",
-        label,
-        "--intron",
-        str(intron),
-        "--exon",
-        str(exon),
-        "--window",
-        str(window),
-        "--step",
-        str(step),
-        "--sigFDR",
-        str(sig_fdr),
-        "--sigDeltaPSI",
-        str(sig_delta_psi),
+        PYTHON, str(script_path),
+        "-k", str(known_motifs),
+        "-m", motifs,
+        "--fasta-root", str(fasta_root),
+        "-g", genome,
+        "-o", str(output),
+        "-r", rmats,
+        "-mi", miso,
+        "-u", up,
+        "-d", down,
+        "-b", background,
+        "--label", label,
+        "--intron", str(intron),
+        "--exon", str(exon),
+        "--window", str(window),
+        "--step", str(step),
+        "--sigFDR", str(sig_fdr),
+        "--sigDeltaPSI", str(sig_delta_psi),
     ]
     if separate:
         cmd.append("--separate")

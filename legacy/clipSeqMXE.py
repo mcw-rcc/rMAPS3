@@ -111,6 +111,5 @@ def main():
     print(f"CLIP-seq MXE analysis completed! Results: {out_path}")
     return 0
 
-
 if __name__ == '__main__':
     sys.exit(main())

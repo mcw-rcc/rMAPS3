@@ -6,7 +6,6 @@ This program processes rMATS A3SS output and CLIP-seq peaks to generate RNA maps
 """
 
 import sys
-import os
 import logging
 import time
 import argparse
@@ -126,7 +125,6 @@ def main():
     logging.debug("Runtime: %02d:%02d:%02d", int(runtime/3600), int((runtime%3600)/60), int(runtime%60))
     print(f"CLIP-seq A3SS analysis completed! Results: {out_path}")
     return 0
-
 
 if __name__ == '__main__':
     sys.exit(main())

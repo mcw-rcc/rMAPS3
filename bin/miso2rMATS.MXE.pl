@@ -1,8 +1,6 @@
 #!/usr/bin/perl -w
 use strict;
 
-
-
 sub parseIsoforms { 
   my($iso) = @_;
   my @wds = split(/\@/, $iso);

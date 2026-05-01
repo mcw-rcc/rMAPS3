@@ -37,7 +37,6 @@ class ClipEventSpec:
     script: str
     description: str
 
-
 CLIP_EVENT_SPECS: Dict[str, ClipEventSpec] = {
     "se": ClipEventSpec(
         name="SE",
@@ -66,7 +65,6 @@ CLIP_EVENT_SPECS: Dict[str, ClipEventSpec] = {
     ),
 }
 
-
 def clip_event_script(event: str) -> Path:
     """
     Return the path to the CLIP-seq processing script for the given event.
@@ -84,7 +82,6 @@ def clip_event_script(event: str) -> Path:
     if key not in CLIP_EVENT_SPECS:
         raise ValueError(f"Unsupported event type: {event}")
     return REPO_ROOT / CLIP_EVENT_SPECS[key].script
-
 
 def run_subprocess(cmd: list[str], env_overrides: dict[str, str] | None = None) -> int:
     """

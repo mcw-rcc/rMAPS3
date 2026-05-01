@@ -17,7 +17,6 @@ from rmaps_core.clip_utils import (
     setup_logging, copy_file, process_rmats_file, convert_miso_to_rmats
 )
 
-
 def main():
     parser = argparse.ArgumentParser(description='CLIP-seq RNA map for RI events')
     parser.add_argument('-p', '--peak', dest='peakFile', required=True, help='CLIP-seq peaks')
@@ -110,7 +109,6 @@ def main():
     logging.debug("Runtime: %02d:%02d:%02d", int(runtime/3600), int((runtime%3600)/60), int(runtime%60))
     print(f"CLIP-seq RI analysis completed! Results: {out_path}")
     return 0
-
 
 if __name__ == '__main__':
     sys.exit(main())

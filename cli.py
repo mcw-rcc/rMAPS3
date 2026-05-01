@@ -285,7 +285,6 @@ def motif_map_a3ss(
     )
     raise typer.Exit(code=code)
 
-
 @motif_app.command("a5ss")
 def motif_map_a5ss(
     known_motifs: Path = typer.Option(..., "--known-motifs", "--knownMotifs"),
@@ -341,7 +340,6 @@ def motif_map_a5ss(
     )
     raise typer.Exit(code=code)
 
-
 @motif_app.command("ri")
 def motif_map_ri(
     known_motifs: Path = typer.Option(..., "--known-motifs", "--knownMotifs"),
@@ -396,7 +394,6 @@ def motif_map_ri(
         keep_temp=keep_temp,
     )
     raise typer.Exit(code=code)
-
 
 @motif_app.command("mxe")
 def motif_map_mxe(

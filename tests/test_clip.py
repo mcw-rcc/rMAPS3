@@ -14,7 +14,6 @@ import sys
 from pathlib import Path
 from datetime import datetime
 
-
 # CLIP event type configurations
 CLIP_EVENTS = {
     "se": {
@@ -73,7 +72,6 @@ DEFAULT_COMPARE_METHODS = [
     "brunnermunzel_greater",
 ]
 
-
 def run_clip_test(event_type, config, verbose=False):
     """Run CLIP test for a specific event type."""
     print(f"\n{'='*70}")
@@ -125,7 +123,6 @@ def run_clip_test(event_type, config, verbose=False):
         print(f"FAIL with exception: {e}")
         return False
 
-
 def count_significant_windows(pval_file: Path, threshold: float = 0.05) -> int:
     if not pval_file.exists():
         return -1
@@ -142,7 +139,6 @@ def count_significant_windows(pval_file: Path, threshold: float = 0.05) -> int:
             except ValueError:
                 continue
     return count
-
 
 def run_clip_method_compare(event_type, config, methods, verbose=False):
     print(f"\n{'='*70}")
@@ -201,7 +197,6 @@ def run_clip_method_compare(event_type, config, methods, verbose=False):
     print("PASS method comparison")
     return True
 
-
 def list_events():
     """List all available event types."""
     print("\nAvailable CLIP event types:")
@@ -209,7 +204,6 @@ def list_events():
     for event_type, config in CLIP_EVENTS.items():
         print(f"  {event_type:6s} - {config['name']}")
     print()
-
 
 def main():
     parser = argparse.ArgumentParser(
@@ -294,8 +288,5 @@ Examples:
 
     return 0 if failed == 0 else 1
 
-
 if __name__ == "__main__":
     sys.exit(main())
-
-

@@ -21,10 +21,7 @@ def listToString(x):
   return rVal;
 
 ### setting up the logging format 
-logging.basicConfig(level=logging.DEBUG,
-                    format='%(asctime)s %(message)s',
-                    filename='log.getExonSets.'+  str(datetime.datetime.now())+'.txt',
-                    filemode='w')
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(message)s', filename='log.getExonSets.'+  str(datetime.datetime.now())+'.txt', filemode='w')
 
 ##### Getting Start Time ######
 logging.debug('Start the program with [%s]\n', listToString(sys.argv));

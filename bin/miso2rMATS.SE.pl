@@ -1,8 +1,6 @@
 #!/usr/bin/perl -w
 use strict;
 
-
-
 sub parseIsoforms { 
   my($iso) = @_;
   my @wds = split(/\@/, $iso);
@@ -30,7 +28,6 @@ sub parseIsoforms {
                 $downstreamStart, $downstreamEnd);
   return(@retArr);
 }
-
 
 sub parseAssignedCounts {
    my ($ac) = @_;

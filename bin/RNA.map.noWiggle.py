@@ -31,13 +31,11 @@ if (len(sys.argv) < 14):
     )
     sys.exit()
 
-
 def listToString(x):  ## log command
     rVal = ''
     for a in x:
         rVal += a + ' '
     return rVal
-
 
 ## OUTPUT, create an output folder
 outDir = sys.argv[9]
@@ -181,7 +179,6 @@ def read_OS_File(
         "There are %d, %d, %d exons in up, down, and background-exons" %
         (len(u), len(d), len(b)))
 
-
 def countPeaks(
     ch, st, region, rv, ws, ss, countDist, ei
 ):  ## fill up rv and countDist with proper values, exon index was passed for p-value testing
@@ -237,15 +234,7 @@ def countPeaks(
             rv[i] += tC[i]
             countDist[i][ei] += tC[i]
 
-
-def processExons(exons,
-                 peaks,
-                 CD,
-                 intronLen=250,
-                 exonLen=50,
-                 winSize=50,
-                 step=10):  ## now process exons in each group
-
+def processExons(exons, peaks, CD, intronLen=250, exonLen=50, winSize=50, step=10):  ## now process exons in each group
     #global cdist_up, cdist_dn, cdist_bg; ## get count distribution dictionaries
 
     eP = 1 + (exonLen - winSize) // step
@@ -879,10 +868,6 @@ def oldplotRegions(
     logging.debug("Done plotRegions function")
     return pup, pdn, pbg
 
-
-#
-
-
 def plotRegions(
     tRegion_1,
     tRegion_2,
@@ -1020,8 +1005,6 @@ def fillUpPath(tPoints):
     for pp in range(1, len(tPoints)):  ## for each point from the 2nd element
         rPath.append(path.lineto(tPoints[pp][0], tPoints[pp][1]))
     return rPath
-    logging.debug("Done fillUpPath function")
-
 
 def drawAcutalPlot(
     c,
@@ -1237,7 +1220,6 @@ def drawMap(
         "Done drawing RNA map. Please find RNA.map output in the output folder."
     )
 
-
 ##################### main process #######################
 #
 ### fillup peaks dictionary
@@ -1302,7 +1284,6 @@ except:
     logging.debug("Detail: %s" % sys.exc_info()[1])
     print("There is an exception. Please check your log file")
     sys.exit(-9)
-#
 
 upFile = open(outPath + '/' + 'upregulated.RNAmap.txt', 'w')
 dnFile = open(outPath + '/' + 'downregulated.RNAmap.txt', 'w')
@@ -1414,4 +1395,3 @@ logging.debug("Program ran %.2d:%.2d:%.2d" %
                (runningTime % 3600) // 60, runningTime % 60))
 
 sys.exit(0)
-
